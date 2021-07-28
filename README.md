@@ -1,17 +1,35 @@
-# AILenThienDang
+# AILenThienDang - Awakening
+
+## TODOS
+
+1. Lập trình phần Awakening
+   - Thông tin đang cập nhật
 
 ## Cấu trúc thư mục
 
-### src/pages
+#### src/domains
 
-### src/class
+##### src/domains/Candle
 
-### src/components
+- Biểu đồ nến
 
-### src/domains
+##### src/domains/Timestamp
 
-### src/hooks
+- Khung thời gian
 
-### src/redux
+##### src/domains/Timestamp
 
-### src/styles
+- Lệnh đặt AI
+
+#### src/components
+
+#### src/hooks
+
+#### src/redux/slices
+
+- /priceSlice.js
+- /sessionSlice.js
+
+#### src/class
+
+#### src/styles
