@@ -1,0 +1,16 @@
+{
+  "name": "wefinex",
+  "productName": "Wefinex",
+  "version": "2.1.10",
+  "description": "Wefinex",
+  "main": "./main.prod.js",
+  "author": {
+    "name": "Nguyen",
+    "email": "nguyentran0113@gmail.com"
+  },
+  "scripts": {
+    "electron-rebuild": "node -r ../.erb/scripts/BabelRegister.js ../.erb/scripts/ElectronRebuild.js",
+    "postinstall": "yarn electron-rebuild"
+  },
+  "license": "MIT"
+}
