@@ -1,11 +1,11 @@
 # AILenThienDang - Awakening
 
-## TODOS
+## TODOs
 
 1. Lập trình phần Awakening
    - Thông tin đang cập nhật
 
-## Cấu trúc thư mục
+## Directory structure
 
 #### src/domains
 
