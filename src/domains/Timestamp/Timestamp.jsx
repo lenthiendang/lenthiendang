@@ -14,10 +14,7 @@ const statuses = [
 
 const TimestampBox = () => {
   const dispatch = useDispatch();
-  const {
-    account,
-    session: { counter, isBetSession },
-  } = useSelector((state) => state);
+  const { counter, isBetSession } = useSelector((state) => state.session);
 
   const [status, setStatus] = useState(statuses[0]);
 

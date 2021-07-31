@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import React from 'react';
 import { Box } from '@chakra-ui/react';
 
-import { theme } from '../../styles';
+import { theme } from '../../../styles';
 
 const StyledButton = styled.div`
   width: 100%;
@@ -10,7 +10,6 @@ const StyledButton = styled.div`
   align-items: center;
   justify-content: center;
   margin-top: ${theme.spacing.lg};
-  & > div {
     display: flex;
     align-items: center;
     justify-content: center;

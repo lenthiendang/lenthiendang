@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useDisclosure, Flex } from '@chakra-ui/react';
 import { RiBarChartGroupedFill } from 'react-icons/ri';
 
-import { ButtonWithIcon } from '../../components/Button';
+import { ButtonWithIcon } from '../../../components/Button';
 import Analysis from './Analysis';
 
 const AnalysisTrigger = () => {

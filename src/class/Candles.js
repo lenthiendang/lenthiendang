@@ -1,8 +1,12 @@
 import dayjs from 'dayjs';
 
-const initRandomCandle = () => {
+const initRandomCandle = (newSession) => {
   const randNum = Math.random();
-  return randNum >= 0.5;
+  return {
+    time: dayjs().format('YYYY-MM-DD HH:mm:ss').toString(),
+    session: newSession,
+    type: randNum >= 0.5,
+  };
 };
 
 class Candles {
@@ -11,11 +15,8 @@ class Candles {
   }
 
   updateCandles() {
-    const newCandle = {
-      time: dayjs().format('YYYY-MM-DD HH:mm:ss').toString(),
-      session: this.list.length ? this.list[this.list.length - 1].session + 1 : 0,
-      type: initRandomCandle(),
-    };
+    const newSession = this.list.length ? this.list[this.list.length - 1].session + 1 : 0;
+    const newCandle = initRandomCandle(newSession);
     this.list = [...this.list, newCandle];
   }
 }

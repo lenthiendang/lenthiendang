@@ -4,7 +4,7 @@ import { Flex } from '@chakra-ui/react';
 import useAfterSession from '../hooks/useAfterSession';
 import useGetTimestamp from '../hooks/useGetTimestamp';
 import Timestamp from '../domains/Timestamp';
-import Awakening from '../domains/Awakening/AI';
+import Awakening from '../domains/Awakening';
 import Candle from '../domains/Candle';
 
 const Dashboard = () => {
