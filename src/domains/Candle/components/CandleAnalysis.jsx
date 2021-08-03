@@ -28,7 +28,7 @@ const convertCandleListToString = (candles) => {
   return candles.map((candle) => (candle.type ? 'T' : 'G')).join('');
 };
 
-const countCandle = (list, length, isDuplicate) => {
+const countCandle = (list, length, isDuplicated) => {
   const stringList = convertCandleListToString(list);
   const done = initPattern(length);
   let lastCandle = null;
@@ -38,7 +38,7 @@ const countCandle = (list, length, isDuplicate) => {
       done[stringList.slice(i, i + length)] = 1;
     } else {
       const key = stringList.slice(i, i + length);
-      if (!isDuplicate) {
+      if (!isDuplicated) {
         if (lastCandle !== key || (lastCandle === key && i - lastSession === length)) {
           done[key] += 1;
           lastCandle = key;
