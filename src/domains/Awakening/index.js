@@ -1,3 +1,3 @@
-import AI from './AI';
+import Awakening from './components/Awakening';
 
-export default AI;
+export default Awakening;
