@@ -4,46 +4,19 @@
 
 import path from 'path';
 import webpack from 'webpack';
-import { dependencies as externals } from '../../src/package.json';
+import webpackPaths from './webpack.paths.js';
+import { dependencies as externals } from '../../build/app/package.json';
 
 export default {
-  externals: [...Object.keys(externals || {}), 'bufferutil', 'utf-8-validate'],
+  externals: [...Object.keys(externals || {})],
 
   module: {
     rules: [
       {
-        test: /\.ts|\.tsx|\.jsx|\.js?$/,
+        test: /\.[jt]sx?$/,
         exclude: /node_modules/,
         use: {
           loader: 'babel-loader',
-          options: {
-            cacheDirectory: true,
-          },
-        },
-      },
-
-      {
-        test: /\.apk?$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            cacheDirectory: true,
-          },
-        },
-      },
-      {
-        test: /PrintDeps\.exe?$/,
-        use: {
-          loader: 'file-loader',
-          options: {
-            cacheDirectory: true,
-          },
-        },
-      },
-      {
-        test: /.*web\/recorder.*\.png|\.html|\.ttf/,
-        use: {
-          loader: 'file-loader',
           options: {
             cacheDirectory: true,
           },
@@ -53,9 +26,11 @@ export default {
   },
 
   output: {
-    path: path.join(__dirname, '../../src'),
+    path: webpackPaths.srcPath,
     // https://github.com/webpack/webpack/issues/1114
-    libraryTarget: 'commonjs2',
+    library: {
+      type: 'commonjs2',
+    },
   },
 
   /**
@@ -63,7 +38,7 @@ export default {
    */
   resolve: {
     extensions: ['.js', '.jsx', '.json', '.ts', '.tsx'],
-    modules: [path.join(__dirname, '../src'), 'node_modules'],
+    modules: [webpackPaths.srcPath, 'node_modules'],
   },
 
   plugins: [

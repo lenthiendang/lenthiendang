@@ -1,0 +1,19 @@
+{
+  "name": "electron-react-boilerplate",
+  "productName": "AILenThienDang",
+  "version": "3.0.1",
+  "description": "AILenThienDang",
+  "main": "./dist/main/main.js",
+  "author": {
+    "name": "AILenThienDang",
+    "email": "ailenthiendangsubs@hotmail.com",
+    "url": "https://lenthiendang.com/"
+  },
+  "scripts": {
+    "electron-rebuild": "node -r ../../.erb/scripts/babel-register.js ../../.erb/scripts/electron-rebuild.js",
+    "link-modules": "node -r ../../.erb/scripts/babel-register.js ../../.erb/scripts/link-modules.js",
+    "postinstall": "yarn electron-rebuild && yarn link-modules"
+  },
+  "license": "MIT",
+  "dependencies": {}
+}
