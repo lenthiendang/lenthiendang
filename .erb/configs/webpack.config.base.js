@@ -22,6 +22,15 @@ export default {
           },
         },
       },
+      {
+        test: /playwright\/lib/,
+        use: {
+          loader: 'file-loader',
+          options: {
+            cacheDirectory: true,
+          },
+        },
+      },
     ],
   },
 
