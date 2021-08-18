@@ -21,11 +21,16 @@ const sessionSlice = createSlice({
 
 export const { setCounter, toggleBetSession } = sessionSlice.actions;
 
-export const getTimestamp = () => (dispatch) => {
-  const ts = new Timestamp();
+export const getTimestamp = () => (dispatch, getState) => {
+  const {
+    session: { isBetSession },
+  } = getState((state) => state);
 
+  const ts = new Timestamp();
   dispatch(setCounter(ts.counter));
-  dispatch(toggleBetSession(ts.isBetSession));
+  if (ts.isBetSession !== isBetSession) {
+    dispatch(toggleBetSession(ts.isBetSession));
+  }
 };
 
 export default sessionSlice.reducer;
