@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 class Timestamp {
-  constructor(delayedTime) {
+  constructor() {
     this.timestamp = dayjs();
     this.counter = 0;
     this.isBetSession = false;
