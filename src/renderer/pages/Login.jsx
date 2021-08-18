@@ -1,25 +1,14 @@
 import React from 'react';
 import { Flex } from '@chakra-ui/react';
 
-import useAfterSession from '../hooks/useAfterSession';
-import useGetTimestamp from '../hooks/useGetTimestamp';
-import Timestamp from '../domains/Timestamp';
-import Awakening from '../domains/Awakening';
-import Candle from '../domains/Candle';
+import LoginBox from '../domains/Login';
 
-const Dashboard = () => {
-  useAfterSession();
-  useGetTimestamp();
-
+const Login = () => {
   return (
     <Flex h="100vh" w="100vw" overflow="hidden" p="1">
-      <Flex m="auto" alignItems="center" justifyItems="center" flexDir="column">
-        <Timestamp />
-        <Candle />
-        <Awakening />
-      </Flex>
+      <LoginBox />
     </Flex>
   );
 };
 
-export default Dashboard;
+export default Login;

@@ -1,25 +1,26 @@
 import React from 'react';
-import { Flex } from '@chakra-ui/react';
+// import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 
-import useAfterSession from '../hooks/useAfterSession';
-import useGetTimestamp from '../hooks/useGetTimestamp';
-import Timestamp from '../domains/Timestamp';
-import Awakening from '../domains/Awakening';
-import Candle from '../domains/Candle';
+import Dashboard from './Dashboard';
+// import Agreement from './Agreement';
+// import Login from './Login';
 
-const Dashboard = () => {
-  useAfterSession();
-  useGetTimestamp();
-
+const Main = () => {
   return (
-    <Flex h="100vh" w="100vw" overflow="hidden" p="1">
-      <Flex m="auto" alignItems="center" justifyItems="center" flexDir="column">
-        <Timestamp />
-        <Candle />
-        <Awakening />
-      </Flex>
-    </Flex>
+    // <Router>
+    //   <Switch>
+    //    <Route path="/index.html">
+    //       <Agreement />
+    //     </Route>
+    //     <Route path="/login" exact>
+    //       <Login />
+    //     </Route>
+    //     <Route path="/index.html" exact>
+    <Dashboard />
+    // </Route>
+    //   </Switch>
+    // </Router>
   );
 };
 
-export default Dashboard;
+export default Main;
