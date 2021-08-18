@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { Flex, Button, Tooltip } from '@chakra-ui/react';
+import { Flex } from '@chakra-ui/react';
 
 import scrollBar from '../../styles/scrollBar';
 import Box from '../../components/Box';

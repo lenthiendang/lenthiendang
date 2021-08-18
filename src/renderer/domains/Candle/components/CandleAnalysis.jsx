@@ -14,7 +14,7 @@ const initPattern = (length) => {
     const candle = i
       .toString(2)
       .split('')
-      .map((candle) => (cd === '0' ? 'G' : 'T'));
+      .map((cd) => (cd === '0' ? 'G' : 'T'));
     while (candle.length < length) {
       candle.unshift('G');
     }
@@ -46,7 +46,7 @@ const countCandle = (list, length, isDuplicated) => {
           lastCandle = key;
           lastSession = i;
         } else {
-          console.log(i - lastSession === length);
+          // console.log(i - lastSession === length);
         }
       } else {
         done[key] += 1;
@@ -64,16 +64,16 @@ const countCandle = (list, length, isDuplicated) => {
   };
 };
 
-const CandleCounter = ({ candles, title, desc }) => {
+const CandleCounter = ({ candles, title }) => {
   return (
     <Flex flexDir="column" justify="center">
       <Text>{title}</Text>
-      {/* <Text>{desc}</Text> */}
       {candles.map((candle) => (
         // eslint-disable-next-line react/jsx-key
         <Flex>
           {candle.type.split('').map((type, id) => (
             <Flex
+              // eslint-disable-next-line react/no-array-index-key
               key={id}
               w="1rem"
               border="0.5px solid"

@@ -14,9 +14,9 @@ const Dashboard = () => {
   return (
     <Flex h="100vh" w="100vw" overflow="hidden" p="1">
       <Flex m="auto" alignItems="center" justifyItems="center" flexDir="column">
-        <Timestamp/>
-        <Candle/>
-        <Awakening/>
+        <Timestamp />
+        <Candle />
+        <Awakening />
       </Flex>
     </Flex>
   );

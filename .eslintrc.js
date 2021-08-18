@@ -2,7 +2,9 @@ module.exports = {
   extends: 'erb',
   rules: {
     // A temporary hack related to IDE not resolving correct package.json
-    'import/no-extraneous-dependencies': 'off',
+    'import/no-extraneous-dependencies': 0,
+    'react/prop-types': 0,
+    'no-plusplus': 0,
   },
   parserOptions: {
     ecmaVersion: 2020,

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React from 'react';
 import { Flex } from '@chakra-ui/react';
 
 import Candle from '../components/Candle';
