@@ -4,6 +4,7 @@ export const PATTERN_TYPE = {
 };
 
 export const PATTERN_FIELD = {
+  ID: 'id',
   TYPE: 'type',
   CONDITION: 'condition',
   BET_ORDERS: 'betOrders',

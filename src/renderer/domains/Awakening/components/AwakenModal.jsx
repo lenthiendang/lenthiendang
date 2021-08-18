@@ -10,15 +10,18 @@ import {
   useDisclosure
 } from '@chakra-ui/react';
 import {
+  addPattern,
+  updatePattern
+} from "../../../redux/slices/awakeningSlice";
+import {
   betOrderSingleRegExp,
   convertBetConditionInputToString,
   convertBetOrderStringToObject,
   PATTERN_FIELD,
   PATTERN_TYPE
 } from '../awakeningUtil';
-import AwakeningInstance from '../models/AwakeningInstance';
 import AwakenPattern from '../models/AwakenPattern';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from "react-redux";
 import ParoliForm from './ParoliForm';
 import MartingaleForm from './MartingaleForm';
 
@@ -31,30 +34,28 @@ const initPattern = {
 };
 
 function AwakenModal(props) {
+  const dispatch = useDispatch()
   const { mode = 'ADD', isOpenModal, onCloseModal, patternInput } = props;
-  console.log({ patternInput });
   const isAddMode = mode === 'ADD';
   const candles = useSelector(state => state.price.list);
-  const awakeningPatterns = AwakeningInstance.getInstance();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pattern, setPattern] = useState(isAddMode
     ? initPattern : mapParoliPatternToInputObject(patternInput));
 
 
-  const handlePatternFormSubmit = (pattern) => {
-    console.log(pattern);
+  const handleAddFormSubmit = (pattern) => {
     const newPattern = pattern.type === PATTERN_TYPE.PAROLI
       ? mapToNewParoliPattern(pattern)
       : mapToNewMartingalePattern(pattern);
-    newPattern.id = awakeningPatterns.getIncrementMaxId();
-    awakeningPatterns.addPattern(new AwakenPattern(newPattern));
+    dispatch(addPattern(new AwakenPattern(newPattern).getObject()))
     onClose();
   };
 
   const handleEditFormSubmit = (pattern) => {
+    console.log(pattern);
     const newPattern = mapToNewParoliPattern(pattern)
     newPattern.id = patternInput.id;
-    awakeningPatterns.updatePattern(new AwakenPattern(newPattern));
+    dispatch(updatePattern(new AwakenPattern(newPattern).getObject()))
     onCloseModal();
   };
 
@@ -96,7 +97,7 @@ function AwakenModal(props) {
   };
 
   function mapParoliPatternToInputObject(pattern) {
-    const { conditionGroupType, betOrders, betLoop, betRatioInit } = pattern;
+    const { id, conditionGroupType, betOrders, betLoop, betRatioInit } = pattern;
     let patternInput = {};
     if (conditionGroupType && betOrders && betLoop && betRatioInit) {
       const betLoopInput = Array.isArray(betLoop) ? betLoop.join('-') : betLoop;
@@ -106,6 +107,7 @@ function AwakenModal(props) {
         .map((bet) => `${bet.betType ? 'T' : 'G'}${bet.betAmount}`).join('');
 
       patternInput = {
+        [PATTERN_FIELD.ID]: id,
         [PATTERN_FIELD.TYPE]: PATTERN_TYPE.PAROLI,
         [PATTERN_FIELD.BET_LOOP]: betLoopInput,
         [PATTERN_FIELD.CONDITION]: conditionInput,
@@ -127,13 +129,13 @@ function AwakenModal(props) {
         <TabPanel>
           <ParoliForm
             pattern={pattern}
-            onSubmit={handlePatternFormSubmit}
+            onSubmit={handleAddFormSubmit}
           />
         </TabPanel>
         <TabPanel>
           <MartingaleForm
             pattern={{ ...pattern, type: PATTERN_TYPE.MARTINGALE }}
-            onSubmit={handlePatternFormSubmit}
+            onSubmit={handleAddFormSubmit}
           />
         </TabPanel>
       </TabPanels>

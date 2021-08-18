@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react';
-
 import {
   Button,
   chakra,
@@ -10,25 +8,32 @@ import {
   Th,
   Thead,
   Tr,
-  useDisclosure,
-} from '@chakra-ui/react';
-import { useSelector } from 'react-redux';
-import Box from '../../../components/Box';
-import AwakeningInstance from '../models/AwakeningInstance';
-import AwakenModal from './AwakenModal';
-import { PATTERN_TYPE } from '../awakeningUtil';
-
-const awakeningPatterns = AwakeningInstance.getInstance();
+  useDisclosure
+} from "@chakra-ui/react";
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import Box from "../../../components/Box";
+import {
+  checkResult,
+  deletePattern,
+  selectPatternList,
+  start,
+  toggleActive
+} from "../../../redux/slices/awakeningSlice";
+import { PATTERN_TYPE } from "../awakeningUtil";
+import AwakenModal from "./AwakenModal";
 
 const Awakening = () => {
+  const dispatch = useDispatch();
   const candles = useSelector((state) => state.price.list);
+  const patternList = useSelector(selectPatternList);
   const [modalPattern, setModalPattern] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   useEffect(() => {
     if (candles && candles.length > 0) {
-      awakeningPatterns.checkResult(candles);
-      awakeningPatterns.start(candles);
+      dispatch(checkResult());
+      dispatch(start());
     }
   }, [candles]);
 
@@ -52,7 +57,7 @@ const Awakening = () => {
           </Tr>
         </Thead>
         <Tbody>
-          {awakeningPatterns.list.map((pattern, index) => {
+          {patternList.map((pattern, index) => {
             const {
               id,
               type,
@@ -66,7 +71,7 @@ const Awakening = () => {
               profit,
               maxWinCount,
               betOrderUpdatedCount,
-              conditionGroupType,
+              conditionGroupType
             } = pattern;
 
             return (
@@ -79,27 +84,27 @@ const Awakening = () => {
                 <Td>{betOrders.length}</Td>
                 <Td>
                   {type === PATTERN_TYPE.PAROLI
-                    ? 'Awaken săn rắn'
-                    : 'Awaken gấp thép'}
+                    ? "Awaken săn rắn"
+                    : "Awaken gấp thép"}
                 </Td>
                 <Td>
                   {!betLoop
-                    ? ''
+                    ? ""
                     : Array.isArray(betLoop)
-                    ? betLoop.join('-')
-                    : betLoop}
+                      ? betLoop.join("-")
+                      : betLoop}
                 </Td>
                 <Td>{betRatio[betRatioPos]}</Td>
-                <Td>{maxWinCount || ''}</Td>
+                <Td>{maxWinCount || ""}</Td>
                 <Td>{betOrderUpdatedCount}</Td>
                 <Td>
                   <Button
                     size="sm"
                     w="5vw"
                     colorScheme="green"
-                    onClick={(e) => awakeningPatterns.toggleActive(index)}
+                    onClick={(e) => dispatch(toggleActive(id))}
                   >
-                    {isActive ? 'Stop' : 'Run'}
+                    {isActive ? "Stop" : "Run"}
                   </Button>
                   {!isActive && (
                     <>
@@ -107,10 +112,11 @@ const Awakening = () => {
                         size="sm"
                         w="5vw"
                         colorScheme="red"
-                        onClick={(e) => awakeningPatterns.deletePattern(index)}
+                        onClick={(e) => dispatch(deletePattern(id))}
                       >
                         Xoá lệnh
                       </Button>
+                      {type === PATTERN_TYPE.PAROLI &&
                       <Button
                         size="sm"
                         w="5vw"
@@ -119,7 +125,7 @@ const Awakening = () => {
                         onClick={() => onClickEdit(pattern)}
                       >
                         Sửa
-                      </Button>
+                      </Button>}
                     </>
                   )}
                 </Td>
@@ -143,11 +149,11 @@ const Awakening = () => {
       return (
         <chakra.span
           key={`${index}-${bet.betAmount}`}
-          color={isBetting ? 'yellow.400' : 'white'}
-          fontWeight={isBetting ? 'bold' : ''}
+          color={isBetting ? "yellow.400" : "white"}
+          fontWeight={isBetting ? "bold" : ""}
         >
-          {bet.betType ? 'T' : 'G'}
-          <Text as="sub" color={isBetting ? 'yellow.400' : 'white'}>
+          {bet.betType ? "T" : "G"}
+          <Text as="sub" color={isBetting ? "yellow.400" : "white"}>
             {bet.betAmount}
           </Text>
         </chakra.span>

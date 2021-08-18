@@ -92,8 +92,8 @@ const defaultPatterns = [
       { betType: false, betAmount: 7.41 },
       { betType: false, betAmount: 14.46 },
       { betType: false, betAmount: 28.2 },
-      { betType: false, betAmount: 54.98 }
-    ]
+      { betType: false, betAmount: 54.98 },
+    ],
   },
   {
     id: 2,
@@ -107,23 +107,25 @@ const defaultPatterns = [
       { betType: true, betAmount: 7.41 },
       { betType: true, betAmount: 14.46 },
       { betType: true, betAmount: 28.2 },
-      { betType: true, betAmount: 54.98 }
-    ]
-  }
-  // {
-  //   type: PATTERN_TYPE.MARTINGALE,
-  //   condition: 'TG',
-  //   betOrders: [
-  //     { betType: true, betAmount: 1 },
-  //     { betType: true, betAmount: 1.95 },
-  //     { betType: true, betAmount: 3.8 },
-  //     { betType: true, betAmount: 7.41 },
-  //     { betType: true, betAmount: 14.46 },
-  //     { betType: true, betAmount: 28.2 },
-  //     { betType: true, betAmount: 54.98 },
-  //     { betType: true, betAmount: 107.21 },
-  //   ],
-  // },
+      { betType: true, betAmount: 54.98 },
+    ],
+  },
+  {
+    id: 3,
+    type: PATTERN_TYPE.MARTINGALE,
+    condition: 'TG',
+    betLoop: [15],
+    betOrders: [
+      { betType: true, betAmount: 1 },
+      { betType: true, betAmount: 1.95 },
+      { betType: true, betAmount: 3.8 },
+      { betType: true, betAmount: 7.41 },
+      { betType: true, betAmount: 14.46 },
+      { betType: true, betAmount: 28.2 },
+      { betType: true, betAmount: 54.98 },
+      { betType: true, betAmount: 107.21 },
+    ],
+  },
   // {
   //   condition: 'G',
   //   betOrders: [
@@ -154,52 +156,10 @@ const defaultPatterns = [
 
 class AwakenPatternList {
   constructor() {
-    this.maxId = 2;
+    this.maxId = 3;
     this.list = defaultPatterns.map((pattern) => {
-      return new AwakenPattern(pattern);
+      return new AwakenPattern(pattern).getObject();
     });
-  }
-
-  getIncrementMaxId() {
-    return ++this.maxId;
-  }
-
-  start(candles) {
-    this.list = this.list.map((pattern) => pattern.start(candles));
-    return this;
-  }
-
-  checkResult(candles) {
-    this.list = this.list.map((pattern) => pattern.checkResult(candles));
-    return this;
-  }
-
-  toggleActive(id) {
-    this.list = this.list.map((pattern, i) => {
-      return i === id ? pattern.toggleActive() : pattern;
-    });
-  }
-
-  sumProfit() {
-    return Math.round(this.list.map((pattern) => pattern.profit).reduce((s, v) => s + v));
-  }
-
-  getPatterns(id) {
-    return this.list.find(pattern => id === pattern.id);
-  }
-
-  addPattern(pattern) {
-    this.list.push(pattern);
-  }
-
-  deletePattern(index) {
-    this.list.splice(index, 1);
-  }
-
-  updatePattern(pattern) {
-    const { id } = pattern;
-    const index = this.list.findIndex(pattern => id === pattern.id);
-    this.list.splice(index, 1, pattern);
   }
 }
 
