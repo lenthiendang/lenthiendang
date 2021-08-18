@@ -5,7 +5,7 @@ import { Provider as ReduxProvider } from 'react-redux';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
 
 import store from './redux';
-import Dashboard from './pages/Dashboard';
+import Main from './pages/Main';
 import Background from './components/Background';
 
 const theme = extendTheme({
@@ -20,7 +20,7 @@ export default function App() {
     <ReduxProvider store={store}>
       <ChakraProvider theme={theme}>
         <Background />
-        <Dashboard />
+        <Main />
       </ChakraProvider>
     </ReduxProvider>
   );
