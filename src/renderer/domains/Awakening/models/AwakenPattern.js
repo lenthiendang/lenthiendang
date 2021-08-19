@@ -23,7 +23,7 @@ class AwakenPattern {
     this.condition = pattern.condition;
     this.conditionGroupType = this.getConditionGroupType(pattern.condition);
     this.betOrders = pattern.betOrders;
-    this.betLoop = pattern.betLoop || [0]; // số lần thua trước khi bắt đầu quá trình khác (paroli)
+    this.betLoop = pattern.betLoop || [0];
     this.betRatioInit = pattern.betRatios || [1];
     this.betRatio = initBetRatio(this.betRatioInit, this.betLoop);
     this.betRatioPos = 0;

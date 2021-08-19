@@ -113,7 +113,8 @@ const defaultPatterns = [
   {
     id: 3,
     type: PATTERN_TYPE.MARTINGALE,
-    condition: 'TG',
+    condition: 'T',
+    maxWinCount: 20,
     betLoop: [15],
     betOrders: [
       { betType: true, betAmount: 1 },

@@ -1,6 +1,6 @@
 import {
-  Center,
   Button,
+  Center,
   chakra,
   Flex,
   Modal,
@@ -8,6 +8,7 @@ import {
   ModalCloseButton,
   ModalContent,
   ModalHeader,
+  ModalOverlay,
   Tab,
   Table,
   TabList,
@@ -106,20 +107,20 @@ const Awakening = () => {
               {isParoli && (
                 <>
                   <Th px="1" color="white">
-                    Gấp rắn Awaken
+                    <Center>Gấp rắn Awaken</Center>
                   </Th>
                   <Th px="1" color="white">
-                    Hệ số
+                    <Center>Hệ số</Center>
                   </Th>
                 </>
               )}
               {!isParoli && (
                 <>
                   <Th px="1" color="white">
-                    Gấp thép Awaken
+                    <Center>Gấp thép Awaken</Center>
                   </Th>
                   <Th px="1" color="white">
-                    Đổi lệnh đặt
+                    <Center>Đổi lệnh đặt</Center>
                   </Th>
                 </>
               )}
@@ -267,7 +268,7 @@ const Awakening = () => {
       );
     });
     return (
-      <Flex justifyContent="center" flexWrap="wrap" w="42vh">
+      <Flex justifyContent="center" flexWrap="wrap" maxWidth="42vh">
         {bets}
       </Flex>
     );
@@ -306,6 +307,7 @@ const Awakening = () => {
           Awaken
         </Button>
         <Modal isOpen={isOpen} onClose={onClose} size="6xl">
+          <ModalOverlay />
           <ModalContent bg="blackAlpha.800" color="whiteAlpha.900">
             <ModalHeader pb="0">
               <Center>AWAKENING</Center>

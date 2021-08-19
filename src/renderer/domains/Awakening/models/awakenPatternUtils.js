@@ -7,7 +7,7 @@ const getLastCandlesString = (candles, length) =>
   getLastCandles(candles, length).join('');
 
 export const startPattern = (pattern, candles) => {
-  let isRunning = false;
+  let { isRunning } = pattern;
   if (
     pattern.isActive &&
     !pattern.isRunning &&
@@ -43,7 +43,7 @@ const handleParoliBetSuccess = (pattern) => {
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
     console.log(
       `Win process paroli `,
-      pattern.betOrders.map((b) => (b.type ? 'T' : 'G'))
+      pattern.betOrders.map((b) => (b.betType ? 'T' : 'G'))
     );
     pattern.winCount += 1;
     pattern.isActive = false;

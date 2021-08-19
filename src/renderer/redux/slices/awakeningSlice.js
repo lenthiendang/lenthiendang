@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { batch } from 'react-redux';
+import { PATTERN_TYPE } from '../../domains/Awakening/awakeningUtil';
 import AwakeningInstance from '../../domains/Awakening/models/AwakeningInstance';
 import {
   checkPatternResult,
@@ -40,6 +41,43 @@ export const selectPattern = (id) => (state) =>
 export const { setPatternList, setMaxId, setSumProfit } =
   awakeningSlice.actions;
 
+const getBetData = (patternList, betAccountType) => {
+  const [upBetting, downBetting] = [
+    {
+      betType: 'UP',
+      betAmount: 0,
+      betAccountType,
+    },
+    {
+      betType: 'DOWN',
+      betAmount: 0,
+      betAccountType,
+    },
+  ];
+
+  if (patternList && patternList.length > 0) {
+    patternList.forEach((pattern) => {
+      const { type, isRunning, betOrders, patternPos, betRatio, betRatioPos } =
+        pattern;
+      const isMartingale = type === PATTERN_TYPE.MARTINGALE;
+
+      if (isRunning) {
+        if (betOrders[patternPos].betType) {
+          upBetting.betAmount += isMartingale
+            ? betOrders[patternPos].betAmount
+            : betRatio[betRatioPos] * betOrders[patternPos].betAmount;
+        } else {
+          downBetting.betAmount += isMartingale
+            ? betOrders[patternPos].betAmount
+            : betRatio[betRatioPos] * betOrders[patternPos].betAmount;
+        }
+      }
+    });
+  }
+
+  return [upBetting, downBetting];
+};
+
 export const start = () => (dispatch, getState) => {
   const {
     price: { list },
@@ -47,7 +85,9 @@ export const start = () => (dispatch, getState) => {
   } = getState((state) => state);
 
   const newList = patternList.map((pattern) => startPattern(pattern, list));
+  const betData = getBetData(newList, 'DEMO');
   dispatch(setPatternList(newList));
+  console.log(betData);
 };
 
 export const checkResult = () => (dispatch, getState) => {
