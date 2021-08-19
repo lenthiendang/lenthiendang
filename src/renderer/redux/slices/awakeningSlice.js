@@ -100,7 +100,7 @@ export const checkResult = () => (dispatch, getState) => {
     checkPatternResult(pattern, list)
   );
   const sumProfit = Math.round(
-    newList.map((pattern) => pattern.profit).reduce((s, v) => s + v)
+    newList.map((pattern) => pattern.profit).reduce((s, v) => s + v, 0)
   );
   dispatch(setPatternList(newList));
   dispatch(setSumProfit(sumProfit));
@@ -124,7 +124,7 @@ export const sumProfit = () => (dispatch, getState) => {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const sumProfit = Math.round(
-    patternList.map((pattern) => pattern.profit).reduce((s, v) => s + v)
+    patternList.map((pattern) => pattern.profit).reduce((s, v) => s + v, 0)
   );
   dispatch(setSumProfit(sumProfit));
 };
