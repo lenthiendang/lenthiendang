@@ -1,4 +1,4 @@
-import { betConditionUnGroupRegExp, PATTERN_TYPE } from "../awakeningUtil";
+import { betConditionUnGroupRegExp, PATTERN_TYPE } from '../awakeningUtil';
 
 const initBetRatio = (ratios, betLoop) => {
   const betRatio = [];
@@ -16,14 +16,14 @@ const initBetRatio = (ratios, betLoop) => {
 };
 
 class AwakenPattern {
-  constructor (pattern) {
+  constructor(pattern) {
     this.id = pattern.id;
     this.type = pattern.type || PATTERN_TYPE.PAROLI;
     this.isActive = pattern.isActive || false;
     this.condition = pattern.condition;
     this.conditionGroupType = this.getConditionGroupType(pattern.condition);
     this.betOrders = pattern.betOrders;
-    this.betLoop = pattern.betLoop || 0; // số lần thua trước khi bắt đầu quá trình khác (paroli)
+    this.betLoop = pattern.betLoop || [0]; // số lần thua trước khi bắt đầu quá trình khác (paroli)
     this.betRatioInit = pattern.betRatios || [1];
     this.betRatio = initBetRatio(this.betRatioInit, this.betLoop);
     this.betRatioPos = 0;
@@ -36,14 +36,16 @@ class AwakenPattern {
     this.betOrderUpdatedCount = 0;
   }
 
-  getConditionGroupType () {
-    return this.condition.match(betConditionUnGroupRegExp).reduce(
-      (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
-      ""
-    );
+  getConditionGroupType() {
+    return this.condition
+      .match(betConditionUnGroupRegExp)
+      .reduce(
+        (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
+        ''
+      );
   }
 
-  toggleActive () {
+  toggleActive() {
     this.isActive = !this.isActive;
     this.isRunning = false;
     this.betRatioPos = 0;
@@ -51,7 +53,7 @@ class AwakenPattern {
     return this;
   }
 
-  getObject () {
+  getObject() {
     return {
       id: this.id,
       type: this.type,
@@ -69,7 +71,7 @@ class AwakenPattern {
       winCount: this.winCount,
       loseCount: this.loseCount,
       maxWinCount: this.maxWinCount,
-      betOrderUpdatedCount: this.betOrderUpdatedCount
+      betOrderUpdatedCount: this.betOrderUpdatedCount,
     };
   }
 }

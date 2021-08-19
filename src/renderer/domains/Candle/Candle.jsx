@@ -33,6 +33,7 @@ const CandleBox = () => {
       css={scrollBar}
       w="60vw"
       h="16"
+      mb="4"
     >
       <Flex justify="center" align="center" h="90%">
         <CandleList candles={list} />

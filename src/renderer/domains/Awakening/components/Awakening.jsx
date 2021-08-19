@@ -1,27 +1,41 @@
 import {
+  Center,
   Button,
   chakra,
+  Flex,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalHeader,
+  Tab,
   Table,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
   Tbody,
   Td,
   Text,
   Th,
   Thead,
   Tr,
-  useDisclosure
-} from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import Box from "../../../components/Box";
+  useDisclosure,
+} from '@chakra-ui/react';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import Box from '../../../components/Box';
 import {
   checkResult,
   deletePattern,
   selectPatternList,
   start,
-  toggleActive
-} from "../../../redux/slices/awakeningSlice";
-import { PATTERN_TYPE } from "../awakeningUtil";
-import AwakenModal from "./AwakenModal";
+  toggleActive,
+} from '../../../redux/slices/awakeningSlice';
+import Candle from '../../Candle';
+import Timestamp from '../../Timestamp';
+import { PATTERN_TYPE } from '../awakeningUtil';
+import AwakenModal from './AwakenModal';
 
 const Awakening = () => {
   const dispatch = useDispatch();
@@ -29,148 +43,251 @@ const Awakening = () => {
   const patternList = useSelector(selectPatternList);
   const [modalPattern, setModalPattern] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const awakenDisclosure = useDisclosure();
 
   useEffect(() => {
     if (candles && candles.length > 0) {
       dispatch(checkResult());
       dispatch(start());
     }
-  }, [candles]);
-
-  const renderMainTable = () => {
-    return (
-      <Table size="sm">
-        <Thead>
-          <Tr>
-            <Th color="white">ID</Th>
-            <Th color="white">Thế nến</Th>
-            <Th color="white">Lệnh đặt</Th>
-            <Th color="white">Lãi</Th>
-            <Th color="white">Thắng/Thua</Th>
-            <Th color="white">Bước</Th>
-            <Th color="white">Phương pháp</Th>
-            <Th color="white">Gấp rắn Awaken</Th>
-            <Th color="white">Hệ số</Th>
-            <Th color="white">Gấp thép Awaken</Th>
-            <Th color="white">Đổi lệnh đặt</Th>
-            <Th color="white">Thao tác</Th>
-          </Tr>
-        </Thead>
-        <Tbody>
-          {patternList.map((pattern, index) => {
-            const {
-              id,
-              type,
-              betLoop,
-              betOrders,
-              isActive,
-              betRatio,
-              betRatioPos,
-              loseCount,
-              winCount,
-              profit,
-              maxWinCount,
-              betOrderUpdatedCount,
-              conditionGroupType
-            } = pattern;
-
-            return (
-              <Tr key={`pattern-${index}`}>
-                <Td>{id}</Td>
-                <Td>{conditionGroupType}</Td>
-                <Td>{renderBetOrderElement(pattern)}</Td>
-                <Td>{Number(profit).toFixed(2)}</Td>
-                <Td>{`${winCount}/${loseCount}`}</Td>
-                <Td>{betOrders.length}</Td>
-                <Td>
-                  {type === PATTERN_TYPE.PAROLI
-                    ? "Awaken săn rắn"
-                    : "Awaken gấp thép"}
-                </Td>
-                <Td>
-                  {!betLoop
-                    ? ""
-                    : Array.isArray(betLoop)
-                      ? betLoop.join("-")
-                      : betLoop}
-                </Td>
-                <Td>{betRatio[betRatioPos]}</Td>
-                <Td>{maxWinCount || ""}</Td>
-                <Td>{betOrderUpdatedCount}</Td>
-                <Td>
-                  <Button
-                    size="sm"
-                    w="5vw"
-                    colorScheme="green"
-                    onClick={(e) => dispatch(toggleActive(id))}
-                  >
-                    {isActive ? "Stop" : "Run"}
-                  </Button>
-                  {!isActive && (
-                    <>
-                      <Button
-                        size="sm"
-                        w="5vw"
-                        colorScheme="red"
-                        onClick={(e) => dispatch(deletePattern(id))}
-                      >
-                        Xoá lệnh
-                      </Button>
-                      {type === PATTERN_TYPE.PAROLI &&
-                      <Button
-                        size="sm"
-                        w="5vw"
-                        bg="green.400"
-                        color="black"
-                        onClick={() => onClickEdit(pattern)}
-                      >
-                        Sửa
-                      </Button>}
-                    </>
-                  )}
-                </Td>
-              </Tr>
-            );
-          })}
-        </Tbody>
-      </Table>
-    );
-  };
+  }, [dispatch, candles]);
 
   const onClickEdit = (pattern) => {
     setModalPattern(pattern);
     onOpen();
   };
 
+  const renderMainTable = (type = PATTERN_TYPE.PAROLI) => {
+    const isParoli = type === PATTERN_TYPE.PAROLI;
+    return (
+      <Box
+        className="Awakening"
+        bg="transparent"
+        color="whiteAlpha.900"
+        h="40vh"
+        px="0"
+        py="2vh"
+        maxHeight="40vh"
+        overflowY="scroll"
+        css={{
+          '&::-webkit-scrollbar': {
+            width: '1px',
+          },
+          '&::-webkit-scrollbar-track': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'gray',
+            borderRadius: '24px',
+          },
+        }}
+      >
+        <Table size="sm">
+          <Thead>
+            <Tr>
+              <Th px="1" color="white">
+                <Center>ID</Center>
+              </Th>
+              <Th px="1" color="white">
+                <Center>Thế nến</Center>
+              </Th>
+              <Th px="1" color="white">
+                <Center>Lệnh đặt</Center>
+              </Th>
+              <Th px="1" color="white">
+                <Center>Lãi</Center>
+              </Th>
+              <Th px="1" color="white">
+                <Center>Thắng/Thua</Center>
+              </Th>
+              <Th px="1" color="white">
+                <Center>Bước</Center>
+              </Th>
+              {isParoli && (
+                <>
+                  <Th px="1" color="white">
+                    Gấp rắn Awaken
+                  </Th>
+                  <Th px="1" color="white">
+                    Hệ số
+                  </Th>
+                </>
+              )}
+              {!isParoli && (
+                <>
+                  <Th px="1" color="white">
+                    Gấp thép Awaken
+                  </Th>
+                  <Th px="1" color="white">
+                    Đổi lệnh đặt
+                  </Th>
+                </>
+              )}
+              <Th px="1" color="white">
+                <Center>Thao tác</Center>
+              </Th>
+            </Tr>
+          </Thead>
+          <Tbody>
+            {patternList
+              .filter((pattern) => pattern.type === type)
+              .map((pattern) => {
+                const {
+                  id,
+                  betLoop,
+                  betOrders,
+                  isActive,
+                  betRatio,
+                  betRatioPos,
+                  loseCount,
+                  winCount,
+                  profit,
+                  maxWinCount,
+                  betOrderUpdatedCount,
+                  conditionGroupType,
+                } = pattern;
+
+                return (
+                  <Tr key={`pattern-${id}`}>
+                    <Td px="1">{id}</Td>
+                    <Td px="1">
+                      <Center>{conditionGroupType}</Center>
+                    </Td>
+                    {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
+                    <Td px="1">{renderBetOrderElement(pattern)}</Td>
+                    <Td px="1">{Number(profit).toFixed(2)}</Td>
+                    <Td px="1">
+                      <Center>{`${winCount}/${loseCount}`}</Center>
+                    </Td>
+                    <Td px="1">
+                      <Center>{betOrders.length}</Center>
+                    </Td>
+                    {isParoli && (
+                      <>
+                        <Td px="1">
+                          <Center>{!betLoop ? '' : betLoop.join('-')}</Center>
+                        </Td>
+                        <Td px="1">
+                          <Center>{betRatio[betRatioPos]}</Center>
+                        </Td>
+                      </>
+                    )}
+                    {!isParoli && (
+                      <>
+                        <Td px="1">
+                          <Center>{maxWinCount || ''}</Center>
+                        </Td>
+                        <Td px="1">
+                          <Center>{betOrderUpdatedCount}</Center>
+                        </Td>
+                      </>
+                    )}
+                    <Td px="1">
+                      <Center>
+                        <Button
+                          size="sm"
+                          w="4vw"
+                          colorScheme="green"
+                          onClick={() => dispatch(toggleActive(id))}
+                        >
+                          {isActive ? 'Stop' : 'Run'}
+                        </Button>
+                        {!isActive && (
+                          <>
+                            <Button
+                              size="sm"
+                              w="4vw"
+                              colorScheme="red"
+                              onClick={() => dispatch(deletePattern(id))}
+                            >
+                              Xoá
+                            </Button>
+                            {isParoli && (
+                              <Button
+                                size="sm"
+                                w="4vw"
+                                bg="green.400"
+                                color="black"
+                                onClick={() => onClickEdit(pattern)}
+                              >
+                                Sửa
+                              </Button>
+                            )}
+                          </>
+                        )}
+                      </Center>
+                    </Td>
+                  </Tr>
+                );
+              })}
+          </Tbody>
+        </Table>
+      </Box>
+    );
+  };
+
+  const renderTabs = () => (
+    <Tabs
+      isFitted
+      variant="enclosed"
+      bg="transparent"
+      colorScheme="yellow"
+      h="50vh"
+      width="100%"
+      px="0"
+      py="0"
+    >
+      <TabList>
+        <Tab>AWAKEN SĂN RẮN</Tab>
+        <Tab>AWAKEN GẤP THÉP</Tab>
+      </TabList>
+      <TabPanels>
+        <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
+        <TabPanel>{renderMainTable(PATTERN_TYPE.MARTINGALE)}</TabPanel>
+      </TabPanels>
+    </Tabs>
+  );
+
   const renderBetOrderElement = (pattern) => {
-    const { betOrders, patternPos, isRunning } = pattern;
-    return betOrders.map((bet, index) => {
+    const { id, betOrders, patternPos, isRunning } = pattern;
+    const bets = betOrders.map((bet, index) => {
       const isBetting = isRunning && index === patternPos;
       return (
         <chakra.span
-          key={`${index}-${bet.betAmount}`}
-          color={isBetting ? "yellow.400" : "white"}
-          fontWeight={isBetting ? "bold" : ""}
+          key={`${id}${bet.betType ? 'T' : 'G'}-${bet.betAmount}`}
+          color={isBetting ? 'yellow.400' : 'white'}
+          fontWeight={isBetting ? 'bold' : ''}
+          lineHeight="1.5"
         >
-          {bet.betType ? "T" : "G"}
-          <Text as="sub" color={isBetting ? "yellow.400" : "white"}>
+          {bet.betType ? 'T' : 'G'}
+          <Text as="sub" color={isBetting ? 'yellow.400' : 'white'}>
             {bet.betAmount}
           </Text>
         </chakra.span>
       );
     });
+    return (
+      <Flex justifyContent="center" flexWrap="wrap" w="42vh">
+        {bets}
+      </Flex>
+    );
   };
 
-  return (
+  const awakenContent = () => (
     <Box
-      className="Awakening"
-      bg="blackAlpha.800"
+      className="awakenContent"
+      bg="transparent"
       color="whiteAlpha.900"
-      w="90vw"
-      h="50vh"
+      px="2vh"
     >
+      <Center>
+        <Timestamp />
+      </Center>
+      <Center>
+        <Candle />
+      </Center>
       <AwakenModal mode="ADD" />
-      {renderMainTable()}
+      {renderTabs()}
       <AwakenModal
         mode="EDIT"
         isOpenModal={isOpen}
@@ -179,6 +296,29 @@ const Awakening = () => {
       />
     </Box>
   );
+
+  const awakeningModal = () => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const { isOpen, onOpen, onClose } = awakenDisclosure;
+    return (
+      <>
+        <Button colorScheme="green" onClick={onOpen}>
+          Awaken
+        </Button>
+        <Modal isOpen={isOpen} onClose={onClose} size="6xl">
+          <ModalContent bg="blackAlpha.800" color="whiteAlpha.900">
+            <ModalHeader pb="0">
+              <Center>AWAKENING</Center>
+            </ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>{awakenContent()}</ModalBody>
+          </ModalContent>
+        </Modal>
+      </>
+    );
+  };
+
+  return <>{awakeningModal()}</>;
 };
 
 export default Awakening;

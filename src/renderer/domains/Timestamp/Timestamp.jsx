@@ -25,9 +25,9 @@ const TimestampBox = () => {
       bg={`${theme.colors[status.color][900]}${theme.opacity[600]}`}
       py="4"
       px="0"
-      m="10"
+      m="0 10 0 10"
       w="16rem"
-      h="12rem"
+      h="6rem"
     >
       {isBetSession ? 'Có thể đặt lệnh' : 'Đang chờ kết quả'}
       <Text fontSize="5xl">{counter || 'Loading'}</Text>

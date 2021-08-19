@@ -1,22 +1,22 @@
-import { createSlice } from "@reduxjs/toolkit";
-import { batch } from "react-redux";
-import AwakeningInstance
-  from "../../domains/Awakening/models/AwakeningInstance";
+import { createSlice } from '@reduxjs/toolkit';
+import { batch } from 'react-redux';
+import AwakeningInstance from '../../domains/Awakening/models/AwakeningInstance';
 import {
   checkPatternResult,
-  startPattern, togglePatternActive
-} from "../../domains/Awakening/models/awakenPatternUtils";
+  startPattern,
+  togglePatternActive,
+} from '../../domains/Awakening/models/awakenPatternUtils';
 
 const awakeningPatterns = AwakeningInstance.getInstance();
 
 const initialState = {
   patternList: awakeningPatterns.list,
   maxId: awakeningPatterns.maxId,
-  sumProfit: 0
+  sumProfit: 0,
 };
 
 const awakeningSlice = createSlice({
-  name: "awakening",
+  name: 'awakening',
   initialState,
   reducers: {
     setPatternList: (state, action) => {
@@ -27,26 +27,23 @@ const awakeningSlice = createSlice({
     },
     setSumProfit: (state, action) => {
       state.sumProfit = action.payload;
-    }
-  }
+    },
+  },
 });
 
 // Selectors
 export const selectPatternList = (state) => state.awakening.patternList;
-export const selectPattern = (id) => (state) => state.awakening.patternList.find(
-  (pattern) => id === pattern.id);
+export const selectPattern = (id) => (state) =>
+  state.awakening.patternList.find((pattern) => id === pattern.id);
 
 // Actions
-export const {
-  setPatternList,
-  setMaxId,
-  setSumProfit
-} = awakeningSlice.actions;
+export const { setPatternList, setMaxId, setSumProfit } =
+  awakeningSlice.actions;
 
 export const start = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
 
   const newList = patternList.map((pattern) => startPattern(pattern, list));
@@ -56,17 +53,22 @@ export const start = () => (dispatch, getState) => {
 export const checkResult = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
 
-  const newList = patternList.map(
-    (pattern) => checkPatternResult(pattern, list));
+  const newList = patternList.map((pattern) =>
+    checkPatternResult(pattern, list)
+  );
+  const sumProfit = Math.round(
+    newList.map((pattern) => pattern.profit).reduce((s, v) => s + v)
+  );
   dispatch(setPatternList(newList));
+  dispatch(setSumProfit(sumProfit));
 };
 
 export const toggleActive = (id) => (dispatch, getState) => {
   const {
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
 
   const newPatternList = patternList.map((pattern) => {
@@ -77,19 +79,19 @@ export const toggleActive = (id) => (dispatch, getState) => {
 
 export const sumProfit = () => (dispatch, getState) => {
   const {
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const sumProfit = Math.round(
-    patternList.map((pattern) => pattern.profit).
-      reduce((s, v) => s + v)
+    patternList.map((pattern) => pattern.profit).reduce((s, v) => s + v)
   );
   dispatch(setSumProfit(sumProfit));
 };
 
 export const addPattern = (pattern) => (dispatch, getState) => {
   const {
-    awakening: { patternList, maxId }
+    awakening: { patternList, maxId },
   } = getState((state) => state);
 
   const newList = patternList.slice(0);
@@ -102,19 +104,20 @@ export const addPattern = (pattern) => (dispatch, getState) => {
 
 export const deletePattern = (id) => (dispatch, getState) => {
   const {
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
-  const newList = patternList.filter(pattern => pattern.id !== id);
+  const newList = patternList.filter((pattern) => pattern.id !== id);
   dispatch(setPatternList(newList));
 };
 
 export const updatePattern = (updatedPattern) => (dispatch, getState) => {
   const {
-    awakening: { patternList }
+    awakening: { patternList },
   } = getState((state) => state);
   const newList = patternList.slice(0);
   const index = newList.findIndex(
-    (pattern) => updatedPattern.id === pattern.id);
+    (pattern) => updatedPattern.id === pattern.id
+  );
   newList.splice(index, 1, updatedPattern);
   dispatch(setPatternList(newList));
 };
