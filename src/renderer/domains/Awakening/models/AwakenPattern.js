@@ -29,6 +29,7 @@ class AwakenPattern {
     this.betRatioPos = 0;
     this.patternPos = 0;
     this.profit = 0;
+    this.betAmount = 0;
     this.isRunning = false;
     this.winCount = 0;
     this.loseCount = 0;
@@ -67,6 +68,7 @@ class AwakenPattern {
       betRatioPos: this.betRatioPos,
       patternPos: this.patternPos,
       profit: this.profit,
+      betAmount: this.betAmount,
       isRunning: this.isRunning,
       winCount: this.winCount,
       loseCount: this.loseCount,

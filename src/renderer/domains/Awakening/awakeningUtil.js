@@ -1,6 +1,6 @@
 export const PATTERN_TYPE = {
   PAROLI: 'PAROLI',
-  MARTINGALE: 'MARTINGALE'
+  MARTINGALE: 'MARTINGALE',
 };
 
 export const PATTERN_FIELD = {
@@ -11,7 +11,7 @@ export const PATTERN_FIELD = {
   BET_LOOP: 'betLoop',
   BET_RATIOS: 'betRatios',
   MAX_WIN_COUNT: 'maxWinCount',
-  BET_AMOUNTS: 'betAmounts'
+  BET_AMOUNTS: 'betAmounts',
 };
 
 export const betOrderRegExp = /^([TG]\d+\.?\d*)+$/;
@@ -30,7 +30,7 @@ export const convertBetOrderStringToObject = (betOder) => {
   }
   return {
     betType: betOder.charAt(0) === 'T',
-    betAmount: Number(betOder.slice(1))
+    betAmount: Number(betOder.slice(1)),
   };
 };
 
@@ -44,7 +44,7 @@ export const convertBetConditionStringToObject = (condition) => {
   }
   return {
     type: condition.charAt(condition.length - 1) === 'T',
-    count: count
+    count,
   };
 };
 
@@ -52,9 +52,10 @@ export const convertToBetConditionList = (condition) => {
   const isValid = betConditionRegExp.test(condition);
   if (!isValid) return;
 
+  // eslint-disable-next-line consistent-return
   return condition
     .match(betConditionSingleRegExp)
-    .map(condition => convertBetConditionStringToObject(condition));
+    .map((cond) => convertBetConditionStringToObject(cond));
 };
 
 export const convertBetConditionInputToString = (condition) => {
@@ -63,22 +64,30 @@ export const convertBetConditionInputToString = (condition) => {
 
   const subConditions = condition
     .match(betConditionSingleRegExp)
-    .map(condition => convertBetConditionStringToObject(condition));
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    .map((condition) => convertBetConditionStringToObject(condition));
 
   let conditionString = '';
   subConditions.forEach((candle) => {
-    conditionString += (new Array(candle.count).fill(candle.type ? 'T' : 'G')).join('');
+    conditionString += new Array(candle.count)
+      .fill(candle.type ? 'T' : 'G')
+      .join('');
   });
 
+  // eslint-disable-next-line consistent-return
   return conditionString;
 };
 
 export const convertBetConditionToString = (conditionList) => {
   let conditionString = '';
   conditionList.forEach((candle) => {
-    conditionString += (new Array(candle.count).fill(candle.type ? 'T' : 'G')).join('');
+    conditionString += new Array(candle.count)
+      .fill(candle.type ? 'T' : 'G')
+      .join('');
   });
 
   return conditionString;
 };
 
+export const getNumberToFix = (number, digits) =>
+  Number(Number(number).toFixed(digits));

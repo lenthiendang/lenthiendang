@@ -158,13 +158,13 @@ function AwakenModal(props) {
       {isAddMode && (
         <Button
           size="sm"
-          w="10vw"
+          w="5vw"
           mb="3"
-          bg="green.400"
-          color="black"
+          colorScheme="green"
+          color="white"
           onClick={onOpen}
         >
-          Thêm Awaken mới
+          Thêm
         </Button>
       )}
       <Modal

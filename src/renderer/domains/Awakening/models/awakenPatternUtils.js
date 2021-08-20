@@ -46,7 +46,6 @@ const handleParoliBetSuccess = (pattern) => {
       pattern.betOrders.map((b) => (b.betType ? 'T' : 'G'))
     );
     pattern.winCount += 1;
-    pattern.isActive = false;
     pattern.isRunning = false;
     pattern.patternPos = 0;
     pattern.betRatioPos = 0;
@@ -152,5 +151,20 @@ export const togglePatternActive = (pattern) => {
     isRunning: false,
     betRatioPos: 0,
     patternPos: 0,
+  };
+};
+
+export const resetPattern = (pattern) => {
+  return {
+    ...pattern,
+    isActive: false,
+    isRunning: false,
+    betRatioPos: 0,
+    patternPos: 0,
+    profit: 0,
+    betAmount: 0,
+    winCount: 0,
+    loseCount: 0,
+    betOrderUpdatedCount: 0,
   };
 };
