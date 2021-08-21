@@ -54,9 +54,7 @@ const handleParoliBetSuccess = (pattern) => {
   }
 };
 
-const handleDoneProcess = (pattern) => {
-  console.log('Done process paroli because maximum of betLoop');
-  pattern.isActive = false;
+const restartParoliProcess = (pattern) => {
   pattern.isRunning = false;
   pattern.patternPos = 0;
   pattern.betRatioPos = 0;
@@ -66,7 +64,7 @@ const handleParoliBetFailed = (pattern) => {
   pattern.profit -= getParoliPos(pattern).amount;
   pattern.loseCount += 1;
   if (pattern.betRatioPos === pattern.betRatio.length - 1) {
-    handleDoneProcess(pattern);
+    restartParoliProcess(pattern);
   } else {
     pattern.isRunning = false;
     pattern.patternPos = 0;

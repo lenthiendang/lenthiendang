@@ -30,7 +30,6 @@ import {
   checkResult,
   deletePattern,
   resetAllPatterns,
-  selectPatternList,
   startBet,
   toggleActive,
 } from '../../../redux/slices/awakeningSlice';
