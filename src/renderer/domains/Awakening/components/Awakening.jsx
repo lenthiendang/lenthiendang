@@ -25,13 +25,16 @@ import {
 } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { v1 as uuidv1 } from 'uuid';
 import Box from '../../../components/Box';
 import {
   checkResult,
   deletePattern,
   resetAllPatterns,
+  runAllPatterns,
   startBet,
   toggleActive,
+  updateAllMartingaleBetOrders,
 } from '../../../redux/slices/awakeningSlice';
 import Candle from '../../Candle';
 import Timestamp from '../../Timestamp';
@@ -47,6 +50,10 @@ const Awakening = () => {
   const [modalPattern, setModalPattern] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
   const awakenDisclosure = useDisclosure();
+
+  useEffect(() => {
+    dispatch(updateAllMartingaleBetOrders());
+  }, [dispatch]);
 
   useEffect(() => {
     if (candles && candles.length > 0) {
@@ -156,7 +163,7 @@ const Awakening = () => {
               {!isParoli && (
                 <>
                   {tableHeaderTd('Gấp thép Awaken')}
-                  {tableHeaderTd('Đổi lệnh đặt')}
+                  {tableHeaderTd('Đổi lệnh')}
                 </>
               )}
               {tableHeaderTd('Thao tác')}
@@ -241,7 +248,7 @@ const Awakening = () => {
       const isBetting = isRunning && index === patternPos;
       return (
         <chakra.span
-          key={`${id}${bet.betType ? 'T' : 'G'}-${bet.betAmount}`}
+          key={uuidv1()}
           color={isBetting ? 'yellow.400' : 'white'}
           fontWeight={isBetting ? 'bold' : ''}
           lineHeight="1.5"
@@ -278,18 +285,44 @@ const Awakening = () => {
         <Button
           size="sm"
           ml="2"
-          w="5vw"
+          px="2"
           color="white"
           colorScheme="cyan"
           onClick={() => dispatch(resetAllPatterns())}
         >
           Restart
         </Button>
-        <Text color="yellow" px="10">
-          Tổng cược Awaken: {Number(totalBetAmount).toFixed(2)}
+        <Button
+          size="sm"
+          ml="2"
+          px="2"
+          color="white"
+          colorScheme="green"
+          onClick={() => dispatch(runAllPatterns(PATTERN_TYPE.PAROLI))}
+        >
+          Run Săn rắn
+        </Button>
+        <Button
+          size="sm"
+          ml="2"
+          px="2"
+          color="white"
+          colorScheme="green"
+          onClick={() => dispatch(runAllPatterns(PATTERN_TYPE.MARTINGALE))}
+        >
+          Run Gấp thép
+        </Button>
+        <Text color="yellow" px="5">
+          Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
         </Text>
-        <Text color="yellow" px="10">
-          Tổng lãi Awaken: {Number(sumProfit).toFixed(2)}
+        <Text color="yellow" px="5">
+          Lãi Gấp thép: {Number(sumProfit.martingale).toFixed(2)}
+        </Text>
+        <Text color="yellow" px="5">
+          Tổng lãi: {Number(sumProfit.total).toFixed(2)}
+        </Text>
+        <Text color="yellow" px="5">
+          Tổng cược: {Number(totalBetAmount).toFixed(2)}
         </Text>
       </Flex>
       {renderTabs()}

@@ -30,7 +30,7 @@ const TimestampBox = () => {
       h="6rem"
     >
       {isBetSession ? 'Có thể đặt lệnh' : 'Đang chờ kết quả'}
-      <Text fontSize="5xl">{counter || 'Loading'}</Text>
+      <Text fontSize="4xl">{counter || 'Loading'}</Text>
       {/* <StartButton title={status.title} color={status.color} /> */}
     </Box>
   );
