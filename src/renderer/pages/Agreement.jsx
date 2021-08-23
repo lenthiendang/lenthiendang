@@ -4,7 +4,7 @@ import { Center, Text, Flex, ListItem, OrderedList } from '@chakra-ui/react';
 
 import Box from '../components/Box';
 import { Button } from '../components/Button';
-import useAfterStarting from '../hooks/useAfterStarting';
+// import useAfterStarting from '../hooks/useAfterStarting';
 import scrollBar from '../styles/scrollBar';
 
 const agreements = [
@@ -47,7 +47,7 @@ const Agreement = () => {
   const [showWarning, toggleWarning] = useState(false);
   const history = useHistory();
 
-  useAfterStarting();
+  // useAfterStarting();
 
   const handleRightClick = () => {
     history.push('/login');

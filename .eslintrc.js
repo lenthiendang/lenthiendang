@@ -5,6 +5,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 0,
     'react/prop-types': 0,
     'no-plusplus': 0,
+    'no-await-in-loop': 0,
   },
   parserOptions: {
     ecmaVersion: 2020,
