@@ -11,11 +11,19 @@
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
+import os from 'os';
+import fs from 'fs';
 import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
+
+const dir = path.join(os.homedir(), 'LenThienDang');
+
+if (!fs.existsSync(dir)) {
+  fs.mkdirSync(dir);
+}
 
 export default class AppUpdater {
   constructor() {
@@ -80,7 +88,9 @@ const createWindow = async () => {
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      nodeIntegration: true,
+      contextIsolation: false,
+      // preload: path.join(__dirname, 'preload.js'),
     },
   });
 

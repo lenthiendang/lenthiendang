@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { batch } from 'react-redux';
+import { readLocalAwakenPatterns } from '../../../database/awakenPatterns';
 import {
   getNumberToFix,
   PATTERN_TYPE,
