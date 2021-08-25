@@ -8,6 +8,7 @@ import {
 import AwakeningInstance from '../../domains/Awakening/models/AwakeningInstance';
 import {
   checkPatternResult,
+  getMartingaleBetOrders,
   resetPattern,
   startPattern,
   togglePatternActive,
@@ -18,7 +19,11 @@ const awakeningPatterns = AwakeningInstance.getInstance();
 const initialState = {
   patternList: awakeningPatterns.list,
   maxId: awakeningPatterns.maxId,
-  sumProfit: 0,
+  sumProfit: {
+    paroli: 0,
+    martingale: 0,
+    total: 0,
+  },
   totalBetAmount: 0,
 };
 
@@ -118,12 +123,27 @@ export const checkResult = () => (dispatch, getState) => {
   const newList = patternList.map((pattern) =>
     checkPatternResult(pattern, list)
   );
-  const sumProfit = newList
-    .map((pattern) => pattern.profit)
-    .reduce((s, v) => s + v, 0);
+  const sumProfit = {
+    paroli: 0,
+    martingale: 0,
+    total: 0,
+  };
+
+  newList.forEach((pattern) => {
+    sumProfit.total += pattern.profit;
+    if (pattern.type === PATTERN_TYPE.PAROLI) {
+      sumProfit.paroli += pattern.profit;
+    } else {
+      sumProfit.martingale += pattern.profit;
+    }
+  });
+
+  sumProfit.paroli = getNumberToFix(sumProfit.paroli, 2);
+  sumProfit.martingale = getNumberToFix(sumProfit.martingale, 2);
+  sumProfit.total = getNumberToFix(sumProfit.total, 2);
 
   dispatch(setPatternList(newList));
-  dispatch(setSumProfit(getNumberToFix(sumProfit, 2)));
+  dispatch(setSumProfit(sumProfit));
 };
 
 export const toggleActive = (id) => (dispatch, getState) => {
@@ -143,18 +163,6 @@ export const resetAllPatterns = () => (dispatch, getState) => {
   } = getState((state) => state);
   const newPatternList = patternList.map((pattern) => resetPattern(pattern));
   dispatch(setPatternList(newPatternList));
-};
-
-export const sumProfit = () => (dispatch, getState) => {
-  const {
-    awakening: { patternList },
-  } = getState((state) => state);
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const sumProfit = Math.round(
-    patternList.map((pattern) => pattern.profit).reduce((s, v) => s + v, 0)
-  );
-  dispatch(setSumProfit(sumProfit));
 };
 
 export const addPattern = (pattern) => (dispatch, getState) => {
@@ -189,6 +197,33 @@ export const updatePattern = (updatedPattern) => (dispatch, getState) => {
   newList.splice(index, 1, updatedPattern);
   dispatch(setPatternList(newList));
 };
+
+export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
+  const {
+    price: { list },
+    awakening: { patternList },
+  } = getState((state) => state);
+  const newList = patternList.map((pattern) => {
+    return pattern.type === PATTERN_TYPE.PAROLI
+      ? pattern
+      : getMartingaleBetOrders({ ...pattern }, list);
+  });
+  dispatch(setPatternList(newList));
+};
+
+export const runAllPatterns =
+  (type = PATTERN_TYPE.PAROLI) =>
+  (dispatch, getState) => {
+    const {
+      awakening: { patternList },
+    } = getState((state) => state);
+
+    const newPatternList = patternList.map((pattern) => ({
+      ...pattern,
+      isActive: type === pattern.type || pattern.isActive,
+    }));
+    dispatch(setPatternList(newPatternList));
+  };
 
 // Reducer
 export default awakeningSlice.reducer;

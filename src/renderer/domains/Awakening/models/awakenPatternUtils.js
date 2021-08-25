@@ -14,7 +14,6 @@ export const startPattern = (pattern, candles) => {
     pattern.condition ===
       getLastCandlesString(candles, pattern.condition.length)
   ) {
-    // should bet here
     isRunning = true;
   }
   return { ...pattern, isRunning };
@@ -27,15 +26,6 @@ export const getParoliPos = (pattern) => {
       pattern.betRatio[pattern.betRatioPos] *
       pattern.betOrders[pattern.patternPos].betAmount,
   };
-};
-
-export const getConditionGroupType = (pattern) => {
-  return pattern.condition
-    .match(betConditionUnGroupRegExp)
-    .reduce(
-      (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
-      ''
-    );
 };
 
 const handleParoliBetSuccess = (pattern) => {
@@ -85,6 +75,15 @@ const checkParoliResult = (pattern, candles) => {
   return newPattern;
 };
 
+const getConditionGroupType = (pattern) => {
+  return pattern.condition
+    .match(betConditionUnGroupRegExp)
+    .reduce(
+      (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
+      ''
+    );
+};
+
 const updateMartingaleBetOrders = (pattern, candles) => {
   const length = pattern.condition.length + pattern.betOrders.length;
   const lastCandles = getLastCandles(candles, length);
@@ -95,9 +94,15 @@ const updateMartingaleBetOrders = (pattern, candles) => {
       ...pattern.betOrders[index],
       betType: index === 0 ? type === 'T' : type !== 'T',
     }));
+  pattern.conditionGroupType = getConditionGroupType(pattern);
   pattern.condition = newCondition;
   pattern.betOrders = newBetOrders;
   pattern.betOrderUpdatedCount += 1;
+};
+
+export const getMartingaleBetOrders = (pattern, candles) => {
+  updateMartingaleBetOrders(pattern, candles);
+  return pattern;
 };
 
 const handleMartingaleBetFailed = (pattern) => {
