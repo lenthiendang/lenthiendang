@@ -1,20 +1,23 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { batch } from 'react-redux';
-import { readLocalAwakenPatterns } from '../../../database/awakenPatterns';
+import {
+  readLocalAwakenPatterns,
+  setLocalAwakenPatterns,
+} from '../../../database/awakenPatterns';
 import {
   getNumberToFix,
   PATTERN_TYPE,
 } from '../../domains/Awakening/awakeningUtil';
-import AwakeningInstance from '../../domains/Awakening/models/AwakeningInstance';
+import AwakenPatternList from '../../domains/Awakening/models/AwakenPatternList';
 import {
   checkPatternResult,
-  getMartingaleBetOrders,
+  getPatternUpdateBetOrders,
   resetPattern,
   startPattern,
   togglePatternActive,
 } from '../../domains/Awakening/models/awakenPatternUtils';
 
-const awakeningPatterns = AwakeningInstance.getInstance();
+const awakeningPatterns = new AwakenPatternList(readLocalAwakenPatterns());
 
 const initialState = {
   patternList: awakeningPatterns.list,
@@ -165,6 +168,15 @@ export const resetAllPatterns = () => (dispatch, getState) => {
   dispatch(setPatternList(newPatternList));
 };
 
+const saveLocalPatterns = (patternList) => {
+  const saveNewList = setTimeout(() => {
+    // eslint-disable-next-line @typescript-eslint/no-shadow
+    const cloneList = patternList.map((pattern) => resetPattern(pattern, true));
+    setLocalAwakenPatterns(cloneList);
+    clearTimeout(saveNewList);
+  }, 0);
+};
+
 export const addPattern = (pattern) => (dispatch, getState) => {
   const {
     awakening: { patternList, maxId },
@@ -176,6 +188,7 @@ export const addPattern = (pattern) => (dispatch, getState) => {
     dispatch(setMaxId(maxId + 1));
     dispatch(setPatternList(newList));
   });
+  saveLocalPatterns(newList);
 };
 
 export const deletePattern = (id) => (dispatch, getState) => {
@@ -184,6 +197,7 @@ export const deletePattern = (id) => (dispatch, getState) => {
   } = getState((state) => state);
   const newList = patternList.filter((pattern) => pattern.id !== id);
   dispatch(setPatternList(newList));
+  saveLocalPatterns(newList);
 };
 
 export const updatePattern = (updatedPattern) => (dispatch, getState) => {
@@ -196,6 +210,7 @@ export const updatePattern = (updatedPattern) => (dispatch, getState) => {
   );
   newList.splice(index, 1, updatedPattern);
   dispatch(setPatternList(newList));
+  saveLocalPatterns(newList);
 };
 
 export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
@@ -206,7 +221,7 @@ export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
   const newList = patternList.map((pattern) => {
     return pattern.type === PATTERN_TYPE.PAROLI
       ? pattern
-      : getMartingaleBetOrders({ ...pattern }, list);
+      : getPatternUpdateBetOrders({ ...pattern }, list);
   });
   dispatch(setPatternList(newList));
 };

@@ -1,10 +1,9 @@
 import AwakenPattern from './AwakenPattern';
-import { defaultPatterns } from './defaultData';
 
 class AwakenPatternList {
-  constructor() {
-    this.maxId = Math.max(...defaultPatterns.map((pattern) => pattern.id));
-    this.list = defaultPatterns.map((pattern) => {
+  constructor(initPatternList) {
+    this.maxId = Math.max(...initPatternList.map((pattern) => pattern.id));
+    this.list = initPatternList.map((pattern) => {
       return new AwakenPattern(pattern).getObject();
     });
   }

@@ -151,6 +151,7 @@ const Awakening = () => {
               {tableHeaderTd('Thế nến')}
               {tableHeaderTd('Lệnh đặt')}
               {tableHeaderTd('Tổng cược')}
+              {!isParoli && tableHeaderTd('Lãi vòng')}
               {tableHeaderTd('Lãi')}
               {tableHeaderTd('Thắng/Thua')}
               {tableHeaderTd('Bước')}
@@ -163,6 +164,7 @@ const Awakening = () => {
               {!isParoli && (
                 <>
                   {tableHeaderTd('Gấp thép Awaken')}
+                  {tableHeaderTd('Mức thắng')}
                   {tableHeaderTd('Đổi lệnh')}
                 </>
               )}
@@ -182,8 +184,11 @@ const Awakening = () => {
                   loseCount,
                   winCount,
                   profit,
+                  profitLoop,
                   betAmount,
                   maxWinCount,
+                  martingaleWinLoop,
+                  martingaleWinLoopPos,
                   betOrderUpdatedCount,
                   conditionGroupType,
                 } = pattern;
@@ -195,6 +200,7 @@ const Awakening = () => {
                     {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
                     {tableRowTd(renderBetOrderElement(pattern))}
                     {tableRowTd(betAmount)}
+                    {!isParoli && tableRowTd(Number(profitLoop).toFixed(2))}
                     {tableRowTd(Number(profit).toFixed(2))}
                     {tableRowTd(`${winCount}/${loseCount}`)}
                     {tableRowTd(betOrders.length)}
@@ -207,6 +213,7 @@ const Awakening = () => {
                     {!isParoli && (
                       <>
                         {tableRowTd(maxWinCount || '')}
+                        {tableRowTd(martingaleWinLoop[martingaleWinLoopPos])}
                         {tableRowTd(betOrderUpdatedCount)}
                       </>
                     )}
@@ -243,18 +250,20 @@ const Awakening = () => {
   );
 
   const renderBetOrderElement = (pattern) => {
-    const { id, betOrders, patternPos, isRunning } = pattern;
+    const { betOrders, patternPos, isRunning, isVirtualRun } = pattern;
     const bets = betOrders.map((bet, index) => {
       const isBetting = isRunning && index === patternPos;
+      let color = isBetting ? 'yellow.400' : 'white';
+      color = isBetting && isVirtualRun ? 'blue.300' : color;
       return (
         <chakra.span
           key={uuidv1()}
-          color={isBetting ? 'yellow.400' : 'white'}
+          color={color}
           fontWeight={isBetting ? 'bold' : ''}
           lineHeight="1.5"
         >
           {bet.betType ? 'T' : 'G'}
-          <Text as="sub" color={isBetting ? 'yellow.400' : 'white'}>
+          <Text as="sub" color={color}>
             {bet.betAmount}
           </Text>
         </chakra.span>
@@ -280,7 +289,8 @@ const Awakening = () => {
       <Center>
         <Candle />
       </Center>
-      <Flex justifyContent="flex-start">
+      <Text color="yellow">Tiền ban đầu: 100</Text>
+      <Flex justifyContent="flex-start" py="2">
         <AwakenModal mode="ADD" />
         <Button
           size="sm"

@@ -21,10 +21,13 @@ class AwakenPattern {
     this.type = pattern.type || PATTERN_TYPE.PAROLI;
     this.isActive = pattern.isActive || false;
     this.condition = pattern.condition;
-    this.conditionGroupType = this.getConditionGroupType(pattern.condition);
     this.betOrders = pattern.betOrders;
     this.betLoop = pattern.betLoop || [0];
+    this.maxWinCount = pattern.maxWinCount;
+    this.martingaleWinLoop = pattern.martingaleWinLoop || [20];
+    this.martingaleWinLoopPos = pattern.martingaleWinLoopPos || 0;
     this.betRatioInit = pattern.betRatios || [1];
+    this.conditionGroupType = this.getConditionGroupType(pattern.condition);
     this.betRatio = initBetRatio(this.betRatioInit, this.betLoop);
     this.betRatioPos = 0;
     this.patternPos = 0;
@@ -33,7 +36,8 @@ class AwakenPattern {
     this.isRunning = false;
     this.winCount = 0;
     this.loseCount = 0;
-    this.maxWinCount = pattern.maxWinCount;
+    this.profitLoop = 0;
+    this.isVirtualRun = false;
     this.betOrderUpdatedCount = 0;
   }
 
@@ -44,14 +48,6 @@ class AwakenPattern {
         (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
         ''
       );
-  }
-
-  toggleActive() {
-    this.isActive = !this.isActive;
-    this.isRunning = false;
-    this.betRatioPos = 0;
-    this.patternPos = 0;
-    return this;
   }
 
   getObject() {
@@ -73,6 +69,10 @@ class AwakenPattern {
       winCount: this.winCount,
       loseCount: this.loseCount,
       maxWinCount: this.maxWinCount,
+      profitLoop: this.profitLoop,
+      martingaleWinLoop: this.martingaleWinLoop,
+      martingaleWinLoopPos: this.martingaleWinLoopPos,
+      isVirtualRun: this.isVirtualRun,
       betOrderUpdatedCount: this.betOrderUpdatedCount,
     };
   }

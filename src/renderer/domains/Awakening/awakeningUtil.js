@@ -11,8 +11,24 @@ export const PATTERN_FIELD = {
   BET_LOOP: 'betLoop',
   BET_RATIOS: 'betRatios',
   MAX_WIN_COUNT: 'maxWinCount',
+  WIN_LOOP: 'martingaleWinLoop',
   BET_AMOUNTS: 'betAmounts',
 };
+
+export const PATTERN_REALTIME_PROPS = [
+  'conditionGroupType',
+  'betRatio',
+  'betRatioPos',
+  'patternPos',
+  'profit',
+  'betAmount',
+  'isRunning',
+  'winCount',
+  'loseCount',
+  'profitLoop',
+  'isVirtualRun',
+  'betOrderUpdatedCount',
+];
 
 export const betOrderRegExp = /^([TG]\d+\.?\d*)+$/;
 

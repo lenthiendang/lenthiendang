@@ -1,4 +1,8 @@
-import { betConditionUnGroupRegExp, PATTERN_TYPE } from '../awakeningUtil';
+import {
+  betConditionUnGroupRegExp,
+  PATTERN_REALTIME_PROPS,
+  PATTERN_TYPE,
+} from '../awakeningUtil';
 
 const getLastCandles = (candles, length) =>
   candles.slice(length * -1).map((candle) => (candle.type ? 'T' : 'G'));
@@ -94,32 +98,56 @@ const updateMartingaleBetOrders = (pattern, candles) => {
       ...pattern.betOrders[index],
       betType: index === 0 ? type === 'T' : type !== 'T',
     }));
-  pattern.conditionGroupType = getConditionGroupType(pattern);
   pattern.condition = newCondition;
+  pattern.conditionGroupType = getConditionGroupType(pattern);
   pattern.betOrders = newBetOrders;
   pattern.betOrderUpdatedCount += 1;
 };
 
-export const getMartingaleBetOrders = (pattern, candles) => {
+export const getPatternUpdateBetOrders = (pattern, candles) => {
   updateMartingaleBetOrders(pattern, candles);
   return pattern;
 };
 
 const handleMartingaleBetFailed = (pattern) => {
-  pattern.profit -= pattern.betOrders[pattern.patternPos].betAmount;
+  const profit = pattern.isVirtualRun
+    ? 0
+    : pattern.betOrders[pattern.patternPos].betAmount;
+  pattern.profit -= profit;
+  pattern.profitLoop -= profit;
+
+  // if lose a martingale pattern
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
     pattern.patternPos = 0;
     pattern.loseCount += 1;
+    if (pattern.isVirtualRun) {
+      pattern.profitLoop = 0;
+    }
+    if (pattern.martingaleWinLoopPos === pattern.martingaleWinLoop.length - 1) {
+      pattern.martingaleWinLoopPos = 0;
+    } else {
+      pattern.martingaleWinLoopPos += pattern.isVirtualRun ? 1 : 0;
+    }
+    pattern.isVirtualRun = false;
   } else {
     pattern.patternPos += 1;
   }
 };
 
 const handleMartingaleBetSuccess = (pattern, candles) => {
-  pattern.profit += pattern.betOrders[pattern.patternPos].betAmount * 0.95;
+  const profit = pattern.isVirtualRun
+    ? 0
+    : pattern.betOrders[pattern.patternPos].betAmount * 0.95;
+  pattern.profit += profit;
+  pattern.profitLoop += profit;
   pattern.winCount += 1;
   pattern.patternPos = 0;
   pattern.isRunning = false;
+  // if profit >= limit win amount => run virtual
+  pattern.isVirtualRun =
+    pattern.profitLoop >=
+    pattern.martingaleWinLoop[pattern.martingaleWinLoopPos];
+
   if (pattern.winCount % pattern.maxWinCount === 0) {
     updateMartingaleBetOrders(pattern, candles);
   }
@@ -157,17 +185,26 @@ export const togglePatternActive = (pattern) => {
   };
 };
 
-export const resetPattern = (pattern) => {
-  return {
+export const resetPattern = (pattern, isDeleteRealTimeProps = false) => {
+  const newPattern = {
     ...pattern,
     isActive: false,
     isRunning: false,
+    isVirtualRun: false,
     betRatioPos: 0,
+    martingaleWinLoopPos: 0,
     patternPos: 0,
     profit: 0,
+    profitLoop: 0,
     betAmount: 0,
     winCount: 0,
     loseCount: 0,
     betOrderUpdatedCount: 0,
   };
+  if (isDeleteRealTimeProps) {
+    PATTERN_REALTIME_PROPS.forEach((prop) => {
+      delete newPattern[prop];
+    });
+  }
+  return newPattern;
 };

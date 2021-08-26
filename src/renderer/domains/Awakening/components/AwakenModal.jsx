@@ -23,6 +23,7 @@ import {
   betOrderSingleRegExp,
   convertBetConditionInputToString,
   convertBetOrderStringToObject,
+  getNumberToFix,
   PATTERN_FIELD,
   PATTERN_TYPE,
 } from '../awakeningUtil';
@@ -43,6 +44,7 @@ function AwakenModal(props) {
   const { mode = 'ADD', isOpenModal, onCloseModal, patternInput } = props;
   const isAddMode = mode === 'ADD';
   const candles = useSelector((state) => state.price.list);
+  const { originalBalance } = useSelector((state) => state.account);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pattern] = useState(
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -72,10 +74,18 @@ function AwakenModal(props) {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const mapToNewMartingalePattern = (pattern) => {
-    const maxWinCount = Number(pattern.maxWinCount);
     const betAmounts = pattern.betAmounts.split('-');
     const lastCandles = candles.slice((betAmounts.length + 1) * -1);
+
+    const maxWinCount = Number(pattern.maxWinCount);
     const condition = lastCandles[0].type ? 'T' : 'G';
+    const martingaleWinLoop = pattern.martingaleWinLoop
+      ? pattern.martingaleWinLoop
+          .split('-')
+          .map((percent) =>
+            getNumberToFix(Number(percent / 100) * originalBalance, 2)
+          )
+      : [];
     const betOrders = lastCandles.slice(1).map((candle, index) => ({
       betType: index === 0 ? candle.type : !candle.type,
       betAmount: Number(betAmounts[index]),
@@ -86,6 +96,7 @@ function AwakenModal(props) {
       maxWinCount,
       condition,
       betOrders,
+      martingaleWinLoop,
     };
   };
 

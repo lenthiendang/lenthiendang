@@ -1,73 +1,80 @@
 import React from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Button, Flex } from '@chakra-ui/react';
-import Box from '../../../components/Box';
 import { useForm } from 'react-hook-form';
-import { betConditionRegExp, betOrderRegExp, PATTERN_FIELD, PATTERN_TYPE } from '../awakeningUtil';
-import InputField from './FormFields/InputField';
 import * as yup from 'yup';
+import Box from '../../../components/Box';
+import {
+  betConditionRegExp,
+  betOrderRegExp,
+  PATTERN_FIELD,
+} from '../awakeningUtil';
+import InputField from './FormFields/InputField';
 
+const validateBetLoop = (betLoop) => {
+  return (betLoop && betLoop.startsWith('-')) || betLoop.endsWith('-')
+    ? false
+    : betLoop
+        .split('-')
+        .every((loopNumber) => Number.isInteger(Number(loopNumber)));
+};
+
+const validateBetRatios = (betRatios) => {
+  if ((betRatios && betRatios.startsWith('-')) || betRatios.endsWith('-'))
+    return false;
+  return betRatios.split('-').every((ratio) => {
+    return (
+      typeof Number(ratio) === 'number' &&
+      Number.isFinite(ratio) &&
+      Number(ratio) > 0
+    );
+  });
+};
 
 const schema = yup.object().shape({
   [PATTERN_FIELD.CONDITION]: yup
     .string()
     .required('Vui lòng nhập thế nến')
-    .test(
-      'right-format',
-      'Thế nến không hợp lệ',
-      (val) => betConditionRegExp.test(val)
+    .test('right-format', 'Thế nến không hợp lệ', (val) =>
+      betConditionRegExp.test(val)
     ),
   [PATTERN_FIELD.BET_ORDERS]: yup
     .string()
     .required('Vui lòng nhập lệnh đặt')
-    .test(
-      'right-format',
-      'Lệnh đặt không hợp lệ',
-      (val) => betOrderRegExp.test(val)
+    .test('right-format', 'Lệnh đặt không hợp lệ', (val) =>
+      betOrderRegExp.test(val)
     ),
   [PATTERN_FIELD.BET_RATIOS]: yup
     .string()
     .required('Vui lòng nhập tỷ lệ đặt')
-    .test(
-      'correct-format',
-      'Tỷ lệ đặt không hợp lệ',
-      (val) => validateBetRatios(val)
+    .test('correct-format', 'Tỷ lệ đặt không hợp lệ', (val) =>
+      validateBetRatios(val)
     ),
   [PATTERN_FIELD.BET_LOOP]: yup
     .string()
     .required('Vui lòng nhập gấp rắn Awaken')
-    .test(
-      'right-format',
-      'Gấp rắn awaken không hợp lệ',
-      (val) => validateBetLoop(val)
+    .test('right-format', 'Gấp rắn awaken không hợp lệ', (val) =>
+      validateBetLoop(val)
     )
     .test(
       'bet-loop-match',
       'Gấp rắn Awaken không phù hợp với tỷ lệ đặt',
-      function(value) {
-        return Number(value) > 0 ||
-          this.parent[PATTERN_FIELD.BET_RATIOS].split('-').length === value.split('-').length;
+      // eslint-disable-next-line func-names
+      function (value) {
+        return (
+          Number(value) > 0 ||
+          this.parent[PATTERN_FIELD.BET_RATIOS].split('-').length ===
+            value.split('-').length
+        );
       }
-    )
+    ),
 });
 
-const validateBetLoop = (betLoop) => {
-  return (betLoop && betLoop.startsWith('-') || betLoop.endsWith('-')) ? false
-    : betLoop.split('-').every((loopNumber) => Number.isInteger(Number(loopNumber)));
-};
-
-const validateBetRatios = (betRatios) => {
-  if (betRatios && betRatios.startsWith('-') || betRatios.endsWith('-')) return false;
-  return betRatios.split('-').every((ratio) => {
-    return typeof Number(ratio) === 'number' && isFinite(ratio) && Number(ratio) > 0;
-  });
-};
-
 export default function ParoliForm({ pattern, onSubmit, mode = 'ADD' }) {
-const isAddMode = mode === 'ADD';
+  const isAddMode = mode === 'ADD';
   const { control, handleSubmit } = useForm({
     defaultValues: pattern,
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
   });
 
   const paroliInputs = () => (
@@ -75,14 +82,14 @@ const isAddMode = mode === 'ADD';
       <InputField
         name={PATTERN_FIELD.CONDITION}
         control={control}
-        isUpperCase={true}
+        isUpperCase
         label="1. Thế nến"
         placeHolder="VD: 2T3G1T"
       />
       <InputField
         name={PATTERN_FIELD.BET_ORDERS}
         control={control}
-        isUpperCase={true}
+        isUpperCase
         label="2. Lệnh đặt"
         placeHolder="VD: T2G4.1G0G0G10.43"
       />
@@ -101,6 +108,7 @@ const isAddMode = mode === 'ADD';
     </>
   );
 
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   const handleFormSubmit = (pattern) => {
     onSubmit(pattern);
   };
@@ -111,7 +119,7 @@ const isAddMode = mode === 'ADD';
         {paroliInputs()}
         <Flex flexDir="column" align="center" pt="4">
           <Button type="submit" w="40%" variant="solid" colorScheme="teal">
-            {isAddMode? 'Thêm mẫu' : 'Lưu'}
+            {isAddMode ? 'Thêm mẫu' : 'Lưu'}
           </Button>
         </Flex>
       </form>

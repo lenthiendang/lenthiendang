@@ -7,12 +7,25 @@ import Box from '../../../components/Box';
 import { PATTERN_FIELD, PATTERN_TYPE } from '../awakeningUtil';
 import InputField from './FormFields/InputField';
 
+const validateBetOrderAmounts = (betOrderAmounts) => {
+  if (!betOrderAmounts) return false;
+  return betOrderAmounts
+    .split('-')
+    .every((amount) => amount.length > 0 && Number(amount) > 0);
+};
+
+const validateMartingaleWinLoop = (percentWinLoop) => {
+  if (!percentWinLoop) return false;
+  return percentWinLoop
+    .split('-')
+    .every((amount) => amount.length > 0 && Number(amount) > 0);
+};
+
 const schema = yup.object().shape({
   [PATTERN_FIELD.BET_AMOUNTS]: yup
     .string()
     .required('Vui lòng nhập số tiền cho các bước')
     .test('correct-format', 'Giá trị không hợp lệ', (val) =>
-      // eslint-disable-next-line @typescript-eslint/no-use-before-define
       validateBetOrderAmounts(val)
     ),
 
@@ -27,14 +40,14 @@ const schema = yup.object().shape({
       'Vui lòng nhập số lớn hơn 0',
       (value) => Number(value) > 0
     ),
-});
 
-const validateBetOrderAmounts = (betOrderAmounts) => {
-  if (!betOrderAmounts) return false;
-  return betOrderAmounts
-    .split('-')
-    .every((amount) => amount.length > 0 && Number(amount) > 0);
-};
+  [PATTERN_FIELD.WIN_LOOP]: yup
+    .string()
+    .required('Vui lòng nhập hạn mức thắng')
+    .test('correct-format', 'Giá trị không hợp lệ', (val) =>
+      validateMartingaleWinLoop(val)
+    ),
+});
 
 export default function MartingaleForm({ pattern, onSubmit }) {
   const { control, handleSubmit } = useForm({
@@ -63,6 +76,12 @@ export default function MartingaleForm({ pattern, onSubmit }) {
           type="number"
           label="2. Gấp thép Awaken"
           placeHolder="VD: 20"
+        />
+        <InputField
+          name={PATTERN_FIELD.WIN_LOOP}
+          control={control}
+          label="3. Hạn mức thắng (%)"
+          placeHolder="VD: 20 hoặc 20-50-100-200"
         />
         <Flex flexDir="column" align="center" pt="4">
           <Button type="submit" w="40%" variant="solid" colorScheme="teal">
