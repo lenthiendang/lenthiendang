@@ -23,11 +23,7 @@ const validateBetRatios = (betRatios) => {
   if ((betRatios && betRatios.startsWith('-')) || betRatios.endsWith('-'))
     return false;
   return betRatios.split('-').every((ratio) => {
-    return (
-      typeof Number(ratio) === 'number' &&
-      Number.isFinite(ratio) &&
-      Number(ratio) > 0
-    );
+    return typeof Number(ratio) === 'number' && Number(ratio) > 0;
   });
 };
 

@@ -1,4 +1,4 @@
-import { betConditionUnGroupRegExp, PATTERN_TYPE } from '../awakeningUtil';
+import { PATTERN_TYPE } from '../awakeningUtil';
 
 const initBetRatio = (ratios, betLoop) => {
   const betRatio = [];
@@ -27,27 +27,19 @@ class AwakenPattern {
     this.martingaleWinLoop = pattern.martingaleWinLoop || [20];
     this.martingaleWinLoopPos = pattern.martingaleWinLoopPos || 0;
     this.betRatioInit = pattern.betRatios || [1];
-    this.conditionGroupType = this.getConditionGroupType(pattern.condition);
     this.betRatio = initBetRatio(this.betRatioInit, this.betLoop);
     this.betRatioPos = 0;
     this.patternPos = 0;
     this.profit = 0;
+    this.recentProfit = 0;
     this.betAmount = 0;
     this.isRunning = false;
     this.winCount = 0;
     this.loseCount = 0;
     this.profitLoop = 0;
+    this.virtualProfit = 0;
     this.isVirtualRun = false;
     this.betOrderUpdatedCount = 0;
-  }
-
-  getConditionGroupType() {
-    return this.condition
-      .match(betConditionUnGroupRegExp)
-      .reduce(
-        (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
-        ''
-      );
   }
 
   getObject() {
@@ -56,7 +48,6 @@ class AwakenPattern {
       type: this.type,
       isActive: this.isActive,
       condition: this.condition,
-      conditionGroupType: this.conditionGroupType,
       betOrders: this.betOrders,
       betLoop: this.betLoop,
       betRatioInit: this.betRatioInit,
@@ -64,12 +55,14 @@ class AwakenPattern {
       betRatioPos: this.betRatioPos,
       patternPos: this.patternPos,
       profit: this.profit,
+      recentProfit: this.recentProfit,
       betAmount: this.betAmount,
       isRunning: this.isRunning,
       winCount: this.winCount,
       loseCount: this.loseCount,
       maxWinCount: this.maxWinCount,
       profitLoop: this.profitLoop,
+      virtualProfit: this.virtualProfit,
       martingaleWinLoop: this.martingaleWinLoop,
       martingaleWinLoopPos: this.martingaleWinLoopPos,
       isVirtualRun: this.isVirtualRun,

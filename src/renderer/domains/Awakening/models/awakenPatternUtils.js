@@ -4,6 +4,32 @@ import {
   PATTERN_TYPE,
 } from '../awakeningUtil';
 
+const patterInitRealtimeProps = {
+  isActive: false,
+  isRunning: false,
+  isVirtualRun: false,
+  betRatioPos: 0,
+  martingaleWinLoopPos: 0,
+  patternPos: 0,
+  profit: 0,
+  recentProfit: 0,
+  profitLoop: 0,
+  virtualProfit: 0,
+  betAmount: 0,
+  winCount: 0,
+  loseCount: 0,
+  betOrderUpdatedCount: 0,
+};
+
+export const getConditionGroupType = (condition) => {
+  return condition
+    .match(betConditionUnGroupRegExp)
+    .reduce(
+      (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
+      ''
+    );
+};
+
 const getLastCandles = (candles, length) =>
   candles.slice(length * -1).map((candle) => (candle.type ? 'T' : 'G'));
 
@@ -33,7 +59,9 @@ export const getParoliPos = (pattern) => {
 };
 
 const handleParoliBetSuccess = (pattern) => {
-  pattern.profit += getParoliPos(pattern).amount * 0.95;
+  const profit = getParoliPos(pattern).amount * 0.95;
+  pattern.profit += profit;
+  pattern.recentProfit = profit;
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
     console.log(
       `Win process paroli `,
@@ -55,7 +83,9 @@ const restartParoliProcess = (pattern) => {
 };
 
 const handleParoliBetFailed = (pattern) => {
-  pattern.profit -= getParoliPos(pattern).amount;
+  const profit = getParoliPos(pattern).amount;
+  pattern.profit -= profit;
+  pattern.recentProfit = -1 * profit;
   pattern.loseCount += 1;
   if (pattern.betRatioPos === pattern.betRatio.length - 1) {
     restartParoliProcess(pattern);
@@ -79,15 +109,6 @@ const checkParoliResult = (pattern, candles) => {
   return newPattern;
 };
 
-const getConditionGroupType = (pattern) => {
-  return pattern.condition
-    .match(betConditionUnGroupRegExp)
-    .reduce(
-      (acc, current) => `${acc}${current.length}${current.charAt(0)}`,
-      ''
-    );
-};
-
 const updateMartingaleBetOrders = (pattern, candles) => {
   const length = pattern.condition.length + pattern.betOrders.length;
   const lastCandles = getLastCandles(candles, length);
@@ -99,7 +120,6 @@ const updateMartingaleBetOrders = (pattern, candles) => {
       betType: index === 0 ? type === 'T' : type !== 'T',
     }));
   pattern.condition = newCondition;
-  pattern.conditionGroupType = getConditionGroupType(pattern);
   pattern.betOrders = newBetOrders;
   pattern.betOrderUpdatedCount += 1;
 };
@@ -110,11 +130,13 @@ export const getPatternUpdateBetOrders = (pattern, candles) => {
 };
 
 const handleMartingaleBetFailed = (pattern) => {
+  pattern.virtualProfit -= pattern.betOrders[pattern.patternPos].betAmount;
   const profit = pattern.isVirtualRun
     ? 0
     : pattern.betOrders[pattern.patternPos].betAmount;
   pattern.profit -= profit;
   pattern.profitLoop -= profit;
+  pattern.recentProfit = -1 * profit;
 
   // if lose a martingale pattern
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
@@ -135,11 +157,14 @@ const handleMartingaleBetFailed = (pattern) => {
 };
 
 const handleMartingaleBetSuccess = (pattern, candles) => {
+  pattern.virtualProfit +=
+    pattern.betOrders[pattern.patternPos].betAmount * 0.95;
   const profit = pattern.isVirtualRun
     ? 0
     : pattern.betOrders[pattern.patternPos].betAmount * 0.95;
   pattern.profit += profit;
   pattern.profitLoop += profit;
+  pattern.recentProfit = profit;
   pattern.winCount += 1;
   pattern.patternPos = 0;
   pattern.isRunning = false;
@@ -169,10 +194,14 @@ const checkMartingaleResult = (pattern, candles) => {
 };
 
 export const checkPatternResult = (pattern, candles) => {
-  if (pattern.type === PATTERN_TYPE.PAROLI) {
-    return checkParoliResult(pattern, candles);
+  switch (pattern.type) {
+    case PATTERN_TYPE.AUTO_PAROLI:
+      return checkMartingaleResult(pattern, candles);
+    case PATTERN_TYPE.MARTINGALE:
+      return checkMartingaleResult(pattern, candles);
+    default:
+      return checkParoliResult(pattern, candles);
   }
-  return checkMartingaleResult(pattern, candles);
 };
 
 export const togglePatternActive = (pattern) => {
@@ -188,18 +217,7 @@ export const togglePatternActive = (pattern) => {
 export const resetPattern = (pattern, isDeleteRealTimeProps = false) => {
   const newPattern = {
     ...pattern,
-    isActive: false,
-    isRunning: false,
-    isVirtualRun: false,
-    betRatioPos: 0,
-    martingaleWinLoopPos: 0,
-    patternPos: 0,
-    profit: 0,
-    profitLoop: 0,
-    betAmount: 0,
-    winCount: 0,
-    loseCount: 0,
-    betOrderUpdatedCount: 0,
+    ...patterInitRealtimeProps,
   };
   if (isDeleteRealTimeProps) {
     PATTERN_REALTIME_PROPS.forEach((prop) => {

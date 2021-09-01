@@ -3,12 +3,6 @@ import {
   Center,
   chakra,
   Flex,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
   Tab,
   Table,
   TabList,
@@ -23,44 +17,29 @@ import {
   Tr,
   useDisclosure,
 } from '@chakra-ui/react';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { v1 as uuidv1 } from 'uuid';
 import Box from '../../../components/Box';
 import {
-  checkResult,
   deletePattern,
   resetAllPatterns,
-  runAllPatterns,
-  startBet,
+  runPatterns,
   toggleActive,
-  updateAllMartingaleBetOrders,
 } from '../../../redux/slices/awakeningSlice';
 import Candle from '../../Candle';
 import Timestamp from '../../Timestamp';
 import { PATTERN_TYPE } from '../awakeningUtil';
-import AwakenModal from './AwakenModal';
+import { getConditionGroupType } from '../models/awakenPatternUtils';
+import AwakenFormModal from './AwakenFormModal';
 
 const Awakening = () => {
   const dispatch = useDispatch();
-  const candles = useSelector((state) => state.price.list);
   const { patternList, totalBetAmount, sumProfit } = useSelector(
     (state) => state.awakening
   );
   const [modalPattern, setModalPattern] = useState({});
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const awakenDisclosure = useDisclosure();
-
-  useEffect(() => {
-    dispatch(updateAllMartingaleBetOrders());
-  }, [dispatch]);
-
-  useEffect(() => {
-    if (candles && candles.length > 0) {
-      dispatch(checkResult());
-      dispatch(startBet());
-    }
-  }, [dispatch, candles]);
 
   const onClickEdit = (pattern) => {
     setModalPattern(pattern);
@@ -69,7 +48,7 @@ const Awakening = () => {
 
   const tableHeaderTd = (label) => (
     <Th px="1" color="white">
-      <Center>{label}</Center>
+      <Center textAlign="center">{label}</Center>
     </Th>
   );
   const tableRowTd = (element) => (
@@ -80,6 +59,9 @@ const Awakening = () => {
 
   const renderTableButtons = (pattern) => {
     const { type, isActive, id } = pattern;
+    const isParoli = type === PATTERN_TYPE.PAROLI;
+    const isAutoParoli = type === PATTERN_TYPE.AUTO_PAROLI;
+    const isMartingale = type === PATTERN_TYPE.MARTINGALE;
     return (
       <Td px="1">
         <Center>
@@ -87,21 +69,23 @@ const Awakening = () => {
             size="sm"
             w="4vw"
             colorScheme={isActive ? 'red' : 'green'}
-            onClick={() => dispatch(toggleActive(id))}
+            onClick={() => dispatch(toggleActive({ id }))}
           >
             {isActive ? 'Stop' : 'Run'}
           </Button>
           {!isActive && (
             <>
-              <Button
-                size="sm"
-                w="4vw"
-                colorScheme="red"
-                onClick={() => dispatch(deletePattern(id))}
-              >
-                Xoá
-              </Button>
-              {type === PATTERN_TYPE.PAROLI && (
+              {!isAutoParoli && (
+                <Button
+                  size="sm"
+                  w="4vw"
+                  colorScheme="red"
+                  onClick={() => dispatch(deletePattern(id))}
+                >
+                  Xoá
+                </Button>
+              )}
+              {isParoli && (
                 <Button
                   size="sm"
                   w="4vw"
@@ -121,6 +105,8 @@ const Awakening = () => {
 
   const renderMainTable = (type = PATTERN_TYPE.PAROLI) => {
     const isParoli = type === PATTERN_TYPE.PAROLI;
+    const isAutoParoli = type === PATTERN_TYPE.AUTO_PAROLI;
+    const isMartingale = type === PATTERN_TYPE.MARTINGALE;
     return (
       <Box
         className="Awakening"
@@ -151,17 +137,17 @@ const Awakening = () => {
               {tableHeaderTd('Thế nến')}
               {tableHeaderTd('Lệnh đặt')}
               {tableHeaderTd('Tổng cược')}
-              {!isParoli && tableHeaderTd('Lãi vòng')}
+              {isMartingale && tableHeaderTd('Lãi ảo')}
               {tableHeaderTd('Lãi')}
               {tableHeaderTd('Thắng/Thua')}
               {tableHeaderTd('Bước')}
-              {isParoli && (
+              {(isParoli || isAutoParoli) && (
                 <>
                   {tableHeaderTd('Gấp rắn Awaken')}
                   {tableHeaderTd('Hệ số')}
                 </>
               )}
-              {!isParoli && (
+              {isMartingale && (
                 <>
                   {tableHeaderTd('Gấp thép Awaken')}
                   {tableHeaderTd('Mức thắng')}
@@ -184,33 +170,34 @@ const Awakening = () => {
                   loseCount,
                   winCount,
                   profit,
-                  profitLoop,
+                  virtualProfit,
                   betAmount,
                   maxWinCount,
                   martingaleWinLoop,
                   martingaleWinLoopPos,
                   betOrderUpdatedCount,
-                  conditionGroupType,
+                  condition,
                 } = pattern;
 
                 return (
                   <Tr key={`pattern-${id}`}>
                     {tableRowTd(id)}
-                    {tableRowTd(conditionGroupType)}
+                    {tableRowTd(getConditionGroupType(condition))}
                     {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
                     {tableRowTd(renderBetOrderElement(pattern))}
                     {tableRowTd(betAmount)}
-                    {!isParoli && tableRowTd(Number(profitLoop).toFixed(2))}
+                    {isMartingale &&
+                      tableRowTd(Number(virtualProfit).toFixed(2))}
                     {tableRowTd(Number(profit).toFixed(2))}
                     {tableRowTd(`${winCount}/${loseCount}`)}
                     {tableRowTd(betOrders.length)}
-                    {isParoli && (
+                    {(isParoli || isAutoParoli) && (
                       <>
                         {tableRowTd(!betLoop ? '' : betLoop.join('-'))}
                         {tableRowTd(betRatio[betRatioPos])}
                       </>
                     )}
-                    {!isParoli && (
+                    {isMartingale && (
                       <>
                         {tableRowTd(maxWinCount || '')}
                         {tableRowTd(martingaleWinLoop[martingaleWinLoopPos])}
@@ -239,8 +226,8 @@ const Awakening = () => {
       py="0"
     >
       <TabList>
-        <Tab>AWAKEN SĂN RẮN</Tab>
-        <Tab>AWAKEN GẤP THÉP</Tab>
+        <Tab>SĂN RẮN</Tab>
+        <Tab>GẤP THÉP</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
@@ -276,6 +263,20 @@ const Awakening = () => {
     );
   };
 
+  const renderButton = ({ label, colorScheme, onClick, disabled = false }) => (
+    <Button
+      size="sm"
+      ml="2"
+      px="2"
+      color="white"
+      disabled={disabled}
+      colorScheme={colorScheme}
+      onClick={onClick}
+    >
+      {label}
+    </Button>
+  );
+
   const awakenContent = () => (
     <Box
       className="awakenContent"
@@ -289,54 +290,41 @@ const Awakening = () => {
       <Center>
         <Candle />
       </Center>
-      <Text color="yellow">Tiền ban đầu: 100</Text>
-      <Flex justifyContent="flex-start" py="2">
-        <AwakenModal mode="ADD" />
-        <Button
-          size="sm"
-          ml="2"
-          px="2"
-          color="white"
-          colorScheme="cyan"
-          onClick={() => dispatch(resetAllPatterns())}
-        >
-          Restart
-        </Button>
-        <Button
-          size="sm"
-          ml="2"
-          px="2"
-          color="white"
-          colorScheme="green"
-          onClick={() => dispatch(runAllPatterns(PATTERN_TYPE.PAROLI))}
-        >
-          Run Săn rắn
-        </Button>
-        <Button
-          size="sm"
-          ml="2"
-          px="2"
-          color="white"
-          colorScheme="green"
-          onClick={() => dispatch(runAllPatterns(PATTERN_TYPE.MARTINGALE))}
-        >
-          Run Gấp thép
-        </Button>
-        <Text color="yellow" px="5">
-          Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
-        </Text>
-        <Text color="yellow" px="5">
-          Lãi Gấp thép: {Number(sumProfit.martingale).toFixed(2)}
-        </Text>
-        <Text color="yellow" px="5">
-          Tổng lãi: {Number(sumProfit.total).toFixed(2)}
-        </Text>
-        <Text color="yellow" px="5">
-          Tổng cược: {Number(totalBetAmount).toFixed(2)}
-        </Text>
+      <Flex justifyContent="flex-start" py="2" flexWrap="wrap">
+        <Flex display="flex" w="100%" justifyContent="center">
+          <Text color="yellow" px="5">
+            Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
+          </Text>
+          <Text color="yellow" px="5">
+            Lãi Gấp thép: {Number(sumProfit.martingale).toFixed(2)}
+          </Text>
+          <Text color="yellow" px="5">
+            Tổng lãi: {Number(sumProfit.total).toFixed(2)}
+          </Text>
+          <Text color="yellow" px="5">
+            Tổng cược: {Number(totalBetAmount).toFixed(2)}
+          </Text>
+        </Flex>
+        <AwakenFormModal mode="ADD" />
+        {renderButton({
+          label: 'Restart',
+          colorScheme: 'cyan',
+          onClick: () => dispatch(resetAllPatterns()),
+        })}
+
+        {renderButton({
+          label: 'Run Săn rắn',
+          colorScheme: 'green',
+          onClick: () => dispatch(runPatterns(PATTERN_TYPE.PAROLI)),
+        })}
+        {renderButton({
+          label: 'Run Gấp thép',
+          colorScheme: 'green',
+          onClick: () => dispatch(runPatterns(PATTERN_TYPE.MARTINGALE)),
+        })}
       </Flex>
       {renderTabs()}
-      <AwakenModal
+      <AwakenFormModal
         mode="EDIT"
         isOpenModal={isOpen}
         onCloseModal={onClose}
@@ -345,29 +333,7 @@ const Awakening = () => {
     </Box>
   );
 
-  const awakeningModal = () => {
-    // eslint-disable-next-line @typescript-eslint/no-shadow
-    const { isOpen, onOpen, onClose } = awakenDisclosure;
-    return (
-      <>
-        <Button colorScheme="green" onClick={onOpen}>
-          Awaken
-        </Button>
-        <Modal isOpen={isOpen} onClose={onClose} size="6xl">
-          <ModalOverlay />
-          <ModalContent bg="blackAlpha.800" color="whiteAlpha.900">
-            <ModalHeader pb="0">
-              <Center>AWAKENING</Center>
-            </ModalHeader>
-            <ModalCloseButton />
-            <ModalBody>{awakenContent()}</ModalBody>
-          </ModalContent>
-        </Modal>
-      </>
-    );
-  };
-
-  return <>{awakeningModal()}</>;
+  return awakenContent();
 };
 
 export default Awakening;

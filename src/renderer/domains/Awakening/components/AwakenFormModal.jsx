@@ -28,6 +28,7 @@ import {
   PATTERN_TYPE,
 } from '../awakeningUtil';
 import AwakenPattern from '../models/AwakenPattern';
+import { getConditionGroupType } from '../models/awakenPatternUtils';
 import ParoliForm from './ParoliForm';
 import MartingaleForm from './MartingaleForm';
 
@@ -39,12 +40,12 @@ const initPattern = {
   [PATTERN_FIELD.BET_RATIOS]: '',
 };
 
-function AwakenModal(props) {
+function AwakenFormModal(props) {
   const dispatch = useDispatch();
   const { mode = 'ADD', isOpenModal, onCloseModal, patternInput } = props;
   const isAddMode = mode === 'ADD';
   const candles = useSelector((state) => state.price.list);
-  const { originalBalance } = useSelector((state) => state.account);
+  // const { originalBalance } = useSelector((state) => state.account);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pattern] = useState(
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -79,17 +80,21 @@ function AwakenModal(props) {
 
     const maxWinCount = Number(pattern.maxWinCount);
     const condition = lastCandles[0].type ? 'T' : 'G';
-    const martingaleWinLoop = pattern.martingaleWinLoop
-      ? pattern.martingaleWinLoop
-          .split('-')
-          .map((percent) =>
-            getNumberToFix(Number(percent / 100) * originalBalance, 2)
-          )
-      : [];
     const betOrders = lastCandles.slice(1).map((candle, index) => ({
       betType: index === 0 ? candle.type : !candle.type,
       betAmount: Number(betAmounts[index]),
     }));
+    const totalBetAmount = betAmounts.reduce(
+      (acc, amount) => acc + Number(amount),
+      0
+    );
+    const martingaleWinLoop = pattern.martingaleWinLoop
+      ? pattern.martingaleWinLoop
+          .split('-')
+          .map((percent) =>
+            getNumberToFix(Number(percent / 100) * totalBetAmount, 2)
+          )
+      : [];
 
     return {
       type: PATTERN_TYPE.MARTINGALE,
@@ -120,14 +125,13 @@ function AwakenModal(props) {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   function mapParoliPatternToInputObject(pattern) {
-    const { id, conditionGroupType, betOrders, betLoop, betRatioInit } =
-      pattern;
+    const { id, condition, betOrders, betLoop, betRatioInit } = pattern;
     // eslint-disable-next-line @typescript-eslint/no-shadow
     let patternInput = {};
-    if (conditionGroupType && betOrders && betLoop && betRatioInit) {
+    if (condition && betOrders && betLoop && betRatioInit) {
       const betLoopInput = Array.isArray(betLoop) ? betLoop.join('-') : betLoop;
       const betRatiosInput = betRatioInit.join('-');
-      const conditionInput = conditionGroupType;
+      const conditionInput = getConditionGroupType(condition);
       const betOrdersInput = betOrders
         .map((bet) => `${bet.betType ? 'T' : 'G'}${bet.betAmount}`)
         .join('');
@@ -203,4 +207,4 @@ function AwakenModal(props) {
   );
 }
 
-export default React.memo(AwakenModal);
+export default React.memo(AwakenFormModal);

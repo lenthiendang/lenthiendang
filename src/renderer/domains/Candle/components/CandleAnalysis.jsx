@@ -95,7 +95,7 @@ const CandleCounter = ({ candles, title }) => {
 const CandleAnalysis = ({ list }) => {
   const [candles, setCandles] = useState({ max: [], min: [] });
   useEffect(() => {
-    setCandles(countCandle(list, 6, false));
+    setCandles(countCandle(list, 7, false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list.length]);
 

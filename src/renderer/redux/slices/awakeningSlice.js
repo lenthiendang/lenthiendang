@@ -5,6 +5,8 @@ import {
   setLocalAwakenPatterns,
 } from '../../../database/awakenPatterns';
 import {
+  getCandlesAppear,
+  getDefaultParoliBetOrder,
   getNumberToFix,
   PATTERN_TYPE,
 } from '../../domains/Awakening/awakeningUtil';
@@ -19,14 +21,17 @@ import {
 
 const awakeningPatterns = new AwakenPatternList(readLocalAwakenPatterns());
 
+const initSumProfit = {
+  paroli: 0,
+  autoParoli: 0,
+  martingale: 0,
+  total: 0,
+};
+
 const initialState = {
   patternList: awakeningPatterns.list,
   maxId: awakeningPatterns.maxId,
-  sumProfit: {
-    paroli: 0,
-    martingale: 0,
-    total: 0,
-  },
+  sumProfit: initSumProfit,
   totalBetAmount: 0,
 };
 
@@ -109,7 +114,8 @@ export const startBet = () => (dispatch, getState) => {
   const newList = patternList.map((pattern) => startPattern(pattern, list));
   const betData = getBetData(newList, 'DEMO');
   const totalBetAmount = newList.reduce(
-    (accum, pattern) => Number(accum) + Number(pattern.betAmount),
+    (accum, pattern) =>
+      Number(accum) + pattern.isVirtualRun ? 0 : Number(pattern.betAmount),
     0
   );
   dispatch(setPatternList(newList));
@@ -120,51 +126,71 @@ export const startBet = () => (dispatch, getState) => {
 export const checkResult = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList },
+    awakening: { patternList, sumProfit },
   } = getState((state) => state);
 
   const newList = patternList.map((pattern) =>
     checkPatternResult(pattern, list)
   );
-  const sumProfit = {
-    paroli: 0,
-    martingale: 0,
-    total: 0,
-  };
+  const sumProfitNow = { ...sumProfit };
 
   newList.forEach((pattern) => {
-    sumProfit.total += pattern.profit;
-    if (pattern.type === PATTERN_TYPE.PAROLI) {
-      sumProfit.paroli += pattern.profit;
-    } else {
-      sumProfit.martingale += pattern.profit;
+    sumProfitNow.total += pattern.recentProfit;
+    switch (pattern.type) {
+      case PATTERN_TYPE.AUTO_PAROLI:
+        sumProfitNow.autoParoli += pattern.recentProfit;
+        break;
+      case PATTERN_TYPE.MARTINGALE:
+        sumProfitNow.martingale += pattern.recentProfit;
+        break;
+      default:
+        sumProfitNow.paroli += pattern.recentProfit;
     }
+    // after set to sumProfit state, reset to 0
+    pattern.recentProfit = 0;
   });
 
-  sumProfit.paroli = getNumberToFix(sumProfit.paroli, 2);
-  sumProfit.martingale = getNumberToFix(sumProfit.martingale, 2);
-  sumProfit.total = getNumberToFix(sumProfit.total, 2);
+  sumProfitNow.paroli = getNumberToFix(sumProfitNow.paroli, 2);
+  sumProfitNow.autoParoli = getNumberToFix(sumProfitNow.autoParoli, 2);
+  sumProfitNow.martingale = getNumberToFix(sumProfitNow.martingale, 2);
+  sumProfitNow.total = getNumberToFix(sumProfitNow.total, 2);
 
   dispatch(setPatternList(newList));
-  dispatch(setSumProfit(sumProfit));
+  dispatch(setSumProfit(sumProfitNow));
 };
 
-export const toggleActive = (id) => (dispatch, getState) => {
-  const {
-    awakening: { patternList },
-  } = getState((state) => state);
+export const toggleActive =
+  ({ id, type }) =>
+  (dispatch, getState) => {
+    const {
+      awakening: { patternList },
+    } = getState((state) => state);
 
-  const newPatternList = patternList.map((pattern) => {
-    return pattern.id === id ? togglePatternActive(pattern) : pattern;
-  });
-  dispatch(setPatternList(newPatternList));
-};
+    const newPatternList = patternList.map((pattern) => {
+      return type === pattern.type || pattern.id === id
+        ? togglePatternActive(pattern)
+        : pattern;
+    });
+    dispatch(setPatternList(newPatternList));
+  };
 
 export const resetAllPatterns = () => (dispatch, getState) => {
   const {
     awakening: { patternList = [] },
   } = getState((state) => state);
   const newPatternList = patternList.map((pattern) => resetPattern(pattern));
+  dispatch(setPatternList(newPatternList));
+  dispatch(setSumProfit(initSumProfit));
+};
+
+export const stopPatterns = (type) => (dispatch, getState) => {
+  if (!type) return;
+  const {
+    awakening: { patternList = [] },
+  } = getState((state) => state);
+  const newPatternList = patternList.map((pattern) =>
+    type === pattern.type ? resetPattern(pattern) : pattern
+  );
   dispatch(setPatternList(newPatternList));
 };
 
@@ -226,7 +252,52 @@ export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
   dispatch(setPatternList(newList));
 };
 
-export const runAllPatterns =
+const getParoliOftenAppear = (candleList) =>
+  candleList.map((candleString, index) => ({
+    id: index + 1,
+    condition: candleString.type.charAt(0),
+    betOrders: getDefaultParoliBetOrder(candleString.type.slice(1)),
+  }));
+
+export const updatePatternList = () => (dispatch, getState) => {
+  const {
+    price: { list },
+    awakening: { patternList },
+  } = getState((state) => state);
+  const candleList = getCandlesAppear(list, 7, false).max;
+  const newGoodParoli = getParoliOftenAppear(candleList);
+
+  const newList = patternList.map((pattern) => {
+    switch (pattern.type) {
+      case PATTERN_TYPE.AUTO_PAROLI:
+        return { ...pattern, ...newGoodParoli[pattern.id - 1] };
+      case PATTERN_TYPE.MARTINGALE:
+        return getPatternUpdateBetOrders({ ...pattern }, list);
+      default:
+        return pattern;
+    }
+  });
+  dispatch(setPatternList(newList));
+};
+
+export const updateAutoParoliPatternList = () => (dispatch, getState) => {
+  const {
+    price: { list },
+    awakening: { patternList },
+  } = getState((state) => state);
+  const candleList = getCandlesAppear(list, 7, false).max;
+  const newGoodParoli = getParoliOftenAppear(candleList);
+
+  const newList = patternList.map((pattern) => {
+    if (pattern.type === PATTERN_TYPE.AUTO_PAROLI) {
+      return { ...pattern, ...newGoodParoli[pattern.id - 1] };
+    }
+    return pattern;
+  });
+  dispatch(setPatternList(newList));
+};
+
+export const runPatterns =
   (type = PATTERN_TYPE.PAROLI) =>
   (dispatch, getState) => {
     const {

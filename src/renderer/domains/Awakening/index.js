@@ -1,3 +1,3 @@
-import Awakening from './components/Awakening';
+import MainLayout from './components/MainLayout';
 
-export default Awakening;
+export default MainLayout;
