@@ -79,25 +79,35 @@ const getBetData = (patternList, betAccountType) => {
 
   if (patternList && patternList.length > 0) {
     patternList.forEach((pattern) => {
-      const { type, isRunning, betOrders, patternPos, betRatio, betRatioPos } =
-        pattern;
+      const {
+        type,
+        isRunning,
+        isVirtualRun,
+        betOrders,
+        patternPos,
+        betRatio,
+        betRatioPos,
+      } = pattern;
       const isMartingale = type === PATTERN_TYPE.MARTINGALE;
 
       if (isRunning) {
-        if (betOrders[patternPos].betType) {
-          upBetting.betAmount += isMartingale
-            ? betOrders[patternPos].betAmount
-            : betRatio[betRatioPos] * betOrders[patternPos].betAmount;
-        } else {
-          downBetting.betAmount += isMartingale
-            ? betOrders[patternPos].betAmount
-            : betRatio[betRatioPos] * betOrders[patternPos].betAmount;
-        }
-        pattern.betAmount += isMartingale
-          ? betOrders[patternPos].betAmount
+        // eslint-disable-next-line no-nested-ternary
+        const currentBetAmount = isMartingale
+          ? isVirtualRun
+            ? 0
+            : betOrders[patternPos].betAmount
           : betRatio[betRatioPos] * betOrders[patternPos].betAmount;
+
+        if (betOrders[patternPos].betType) {
+          upBetting.betAmount += currentBetAmount;
+        } else {
+          downBetting.betAmount += currentBetAmount;
+        }
+        pattern.betAmount += currentBetAmount;
+        pattern.recentBetAmount = currentBetAmount;
       }
       pattern.betAmount = getNumberToFix(pattern.betAmount, 2);
+      pattern.recentBetAmount = getNumberToFix(pattern.recentBetAmount, 2);
     });
   }
   upBetting.betAmount = Number(upBetting.betAmount).toFixed(2);
@@ -108,18 +118,18 @@ const getBetData = (patternList, betAccountType) => {
 export const startBet = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList },
+    awakening: { patternList, totalBetAmount },
   } = getState((state) => state);
 
+  let newTotalBetAmount = totalBetAmount;
   const newList = patternList.map((pattern) => startPattern(pattern, list));
   const betData = getBetData(newList, 'DEMO');
-  const totalBetAmount = newList.reduce(
-    (accum, pattern) =>
-      Number(accum) + pattern.isVirtualRun ? 0 : Number(pattern.betAmount),
-    0
-  );
+  newList.forEach((pattern) => {
+    newTotalBetAmount += pattern.isRunning ? pattern.recentBetAmount : 0;
+    pattern.recentBetAmount = 0;
+  });
   dispatch(setPatternList(newList));
-  dispatch(setTotalBetAmount(totalBetAmount));
+  dispatch(setTotalBetAmount(newTotalBetAmount));
   console.log(betData);
 };
 

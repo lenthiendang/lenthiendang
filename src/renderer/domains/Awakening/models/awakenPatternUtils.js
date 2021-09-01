@@ -13,6 +13,7 @@ const patterInitRealtimeProps = {
   patternPos: 0,
   profit: 0,
   recentProfit: 0,
+  recentBetAmount: 0,
   profitLoop: 0,
   virtualProfit: 0,
   betAmount: 0,
