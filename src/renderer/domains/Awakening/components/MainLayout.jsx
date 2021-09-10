@@ -14,6 +14,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import {
   checkResult,
   startBet,
+  updateAutoParoliPatternList,
   updatePatternList,
 } from '../../../redux/slices/awakeningSlice';
 import Awakening from './Awakening';
@@ -31,6 +32,7 @@ function MainLayout() {
   useEffect(() => {
     if (candles && candles.length > 0) {
       dispatch(checkResult());
+      dispatch(updateAutoParoliPatternList());
       dispatch(startBet());
     }
   }, [dispatch, candles]);

@@ -61,7 +61,6 @@ const Awakening = () => {
     const { type, isActive, id } = pattern;
     const isParoli = type === PATTERN_TYPE.PAROLI;
     const isAutoParoli = type === PATTERN_TYPE.AUTO_PAROLI;
-    const isMartingale = type === PATTERN_TYPE.MARTINGALE;
     return (
       <Td px="1">
         <Center>
@@ -85,7 +84,7 @@ const Awakening = () => {
                   Xoá
                 </Button>
               )}
-              {isParoli && (
+              {(isParoli || isAutoParoli) && (
                 <Button
                   size="sm"
                   w="4vw"
@@ -107,6 +106,7 @@ const Awakening = () => {
     const isParoli = type === PATTERN_TYPE.PAROLI;
     const isAutoParoli = type === PATTERN_TYPE.AUTO_PAROLI;
     const isMartingale = type === PATTERN_TYPE.MARTINGALE;
+    const isMiniAwaken = type === PATTERN_TYPE.MINI_AWAKEN;
     return (
       <Box
         className="Awakening"
@@ -154,6 +154,14 @@ const Awakening = () => {
                   {tableHeaderTd('Đổi lệnh')}
                 </>
               )}
+              {isMiniAwaken && (
+                <>
+                  {tableHeaderTd('Gấp thép Awaken')}
+                  {tableHeaderTd('Mini Thua/thắng')}
+                  {tableHeaderTd('Mức thua(lần)')}
+                  {tableHeaderTd('Đổi lệnh')}
+                </>
+              )}
               {tableHeaderTd('Thao tác')}
             </Tr>
           </Thead>
@@ -169,12 +177,15 @@ const Awakening = () => {
                   betRatioPos,
                   loseCount,
                   winCount,
+                  realWinCount,
                   profit,
                   virtualProfit,
                   betAmount,
                   maxWinCount,
                   martingaleWinLoop,
                   martingaleWinLoopPos,
+                  miniAwakenLoseList,
+                  miniAwakenLosePos,
                   betOrderUpdatedCount,
                   condition,
                 } = pattern;
@@ -189,7 +200,11 @@ const Awakening = () => {
                     {isMartingale &&
                       tableRowTd(Number(virtualProfit).toFixed(2))}
                     {tableRowTd(Number(profit).toFixed(2))}
-                    {tableRowTd(`${winCount}/${loseCount}`)}
+                    {tableRowTd(
+                      `${
+                        isParoli || isAutoParoli ? winCount : realWinCount
+                      }/${loseCount}`
+                    )}
                     {tableRowTd(betOrders.length)}
                     {(isParoli || isAutoParoli) && (
                       <>
@@ -201,6 +216,16 @@ const Awakening = () => {
                       <>
                         {tableRowTd(maxWinCount || '')}
                         {tableRowTd(martingaleWinLoop[martingaleWinLoopPos])}
+                        {tableRowTd(betOrderUpdatedCount)}
+                      </>
+                    )}
+                    {isMiniAwaken && (
+                      <>
+                        {tableRowTd(maxWinCount || '')}
+                        {tableRowTd(
+                          `${pattern.miniAwakenLoseCount}/${pattern.miniAwakenWinCount}`
+                        )}
+                        {tableRowTd(miniAwakenLoseList[miniAwakenLosePos])}
                         {tableRowTd(betOrderUpdatedCount)}
                       </>
                     )}
@@ -226,10 +251,12 @@ const Awakening = () => {
       py="0"
     >
       <TabList>
+        <Tab>AUTO SĂN RẮN</Tab>
         <Tab>SĂN RẮN</Tab>
         <Tab>GẤP THÉP</Tab>
       </TabList>
       <TabPanels>
+        <TabPanel>{renderMainTable(PATTERN_TYPE.AUTO_PAROLI)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.MARTINGALE)}</TabPanel>
       </TabPanels>
@@ -291,7 +318,10 @@ const Awakening = () => {
         <Candle />
       </Center>
       <Flex justifyContent="flex-start" py="2" flexWrap="wrap">
-        <Flex display="flex" w="100%" justifyContent="center">
+        <Flex display="flex" w="100%" justifyContent="center" pb="5">
+          <Text color="yellow" px="5">
+            Lãi Auto săn rắn: {Number(sumProfit.autoParoli).toFixed(2)}
+          </Text>
           <Text color="yellow" px="5">
             Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
           </Text>
@@ -311,7 +341,11 @@ const Awakening = () => {
           colorScheme: 'cyan',
           onClick: () => dispatch(resetAllPatterns()),
         })}
-
+        {renderButton({
+          label: 'Run Auto săn rắn',
+          colorScheme: 'green',
+          onClick: () => dispatch(runPatterns(PATTERN_TYPE.AUTO_PAROLI)),
+        })}
         {renderButton({
           label: 'Run Săn rắn',
           colorScheme: 'green',

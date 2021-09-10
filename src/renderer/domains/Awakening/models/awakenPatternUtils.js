@@ -10,6 +10,9 @@ const patterInitRealtimeProps = {
   isVirtualRun: false,
   betRatioPos: 0,
   martingaleWinLoopPos: 0,
+  miniAwakenLosePos: 0,
+  miniAwakenWinCount: 0,
+  miniAwakenLoseCount: 0,
   patternPos: 0,
   profit: 0,
   recentProfit: 0,
@@ -18,8 +21,14 @@ const patterInitRealtimeProps = {
   virtualProfit: 0,
   betAmount: 0,
   winCount: 0,
+  realWinCount: 0,
   loseCount: 0,
   betOrderUpdatedCount: 0,
+};
+
+const autoParoliPatternResetValues = {
+  isRunning: false,
+  patternPos: 0,
 };
 
 export const getConditionGroupType = (condition) => {
@@ -157,6 +166,70 @@ const handleMartingaleBetFailed = (pattern) => {
   }
 };
 
+const handleMiniAwakenBetFailed = (pattern) => {
+  pattern.virtualProfit -= pattern.betOrders[pattern.patternPos].betAmount;
+  const profit = pattern.isVirtualRun
+    ? 0
+    : pattern.betOrders[pattern.patternPos].betAmount;
+  pattern.profit -= profit;
+  pattern.profitLoop -= profit;
+  pattern.recentProfit = -1 * profit;
+  pattern.miniAwakenLoseCount += pattern.miniAwakenWinCount > 0 ? 1 : 0;
+
+  if (
+    !pattern.isVirtualRun &&
+    pattern.miniAwakenLoseCount > 0 &&
+    pattern.miniAwakenLoseCount %
+      pattern.miniAwakenLoseList[pattern.miniAwakenLosePos] ===
+      0
+  ) {
+    console.log('số lần thua = mức thua thua: ', pattern.miniAwakenLoseCount);
+    pattern.isVirtualRun = true;
+    pattern.miniAwakenLoseCount = 0;
+    if (
+      pattern.miniAwakenLoseList.length > 1 &&
+      pattern.miniAwakenLosePos < pattern.miniAwakenLoseList.length - 1
+    ) {
+      pattern.miniAwakenLosePos += 1;
+    } else {
+      pattern.miniAwakenLosePos = 0;
+    }
+  }
+
+  if (
+    pattern.isVirtualRun &&
+    pattern.miniAwakenLoseCount !== 0 &&
+    pattern.miniAwakenLoseCount === 2 * pattern.miniAwakenWinCount
+  ) {
+    console.log(
+      'lose: ',
+      pattern.miniAwakenLoseCount,
+      'win:',
+      pattern.miniAwakenWinCount
+    );
+    pattern.isVirtualRun = false;
+    pattern.patternPos = 0; // câu hỏi số 1
+    pattern.miniAwakenWinCount = 0;
+    pattern.miniAwakenLoseCount = 0;
+  }
+
+  // if lose a martingale pattern
+  if (pattern.betOrders.length - 1 === pattern.patternPos) {
+    // pattern.patternPos = 0; // câu hỏi số 2
+    pattern.loseCount += 1;
+    if (pattern.isVirtualRun) {
+      pattern.profitLoop = 0;
+    }
+    if (pattern.martingaleWinLoopPos === pattern.martingaleWinLoop.length - 1) {
+      pattern.martingaleWinLoopPos = 0;
+    } else {
+      pattern.martingaleWinLoopPos += pattern.isVirtualRun ? 1 : 0;
+    }
+  } else {
+    pattern.patternPos += 1;
+  }
+};
+
 const handleMartingaleBetSuccess = (pattern, candles) => {
   pattern.virtualProfit +=
     pattern.betOrders[pattern.patternPos].betAmount * 0.95;
@@ -167,14 +240,23 @@ const handleMartingaleBetSuccess = (pattern, candles) => {
   pattern.profitLoop += profit;
   pattern.recentProfit = profit;
   pattern.winCount += 1;
+  pattern.realWinCount += pattern.isVirtualRun ? 0 : 1;
   pattern.patternPos = 0;
   pattern.isRunning = false;
-  // if profit >= limit win amount => run virtual
-  pattern.isVirtualRun =
-    pattern.profitLoop >=
-    pattern.martingaleWinLoop[pattern.martingaleWinLoopPos];
+
+  if (pattern.type === PATTERN_TYPE.MARTINGALE) {
+    // if profit >= limit win amount => run virtual
+    pattern.isVirtualRun =
+      pattern.profitLoop >=
+      pattern.martingaleWinLoop[pattern.martingaleWinLoopPos];
+  }
+
+  if (!pattern.isVirtualRun && pattern.type === PATTERN_TYPE.MINI_AWAKEN) {
+    pattern.miniAwakenWinCount += 1;
+  }
 
   if (pattern.winCount % pattern.maxWinCount === 0) {
+    console.log('updateMartingaleBetOrders: ', pattern.winCount);
     updateMartingaleBetOrders(pattern, candles);
   }
 };
@@ -188,7 +270,13 @@ const checkMartingaleResult = (pattern, candles) => {
     ) {
       handleMartingaleBetSuccess(newPattern, candles);
     } else {
-      handleMartingaleBetFailed(newPattern);
+      switch (pattern.type) {
+        case PATTERN_TYPE.MARTINGALE:
+          handleMartingaleBetFailed(newPattern);
+          break;
+        default:
+          handleMiniAwakenBetFailed(newPattern);
+      }
     }
   }
   return newPattern;
@@ -197,8 +285,10 @@ const checkMartingaleResult = (pattern, candles) => {
 export const checkPatternResult = (pattern, candles) => {
   switch (pattern.type) {
     case PATTERN_TYPE.AUTO_PAROLI:
-      return checkMartingaleResult(pattern, candles);
+      return checkParoliResult(pattern, candles);
     case PATTERN_TYPE.MARTINGALE:
+      return checkMartingaleResult(pattern, candles);
+    case PATTERN_TYPE.MINI_AWAKEN:
       return checkMartingaleResult(pattern, candles);
     default:
       return checkParoliResult(pattern, candles);
@@ -226,4 +316,11 @@ export const resetPattern = (pattern, isDeleteRealTimeProps = false) => {
     });
   }
   return newPattern;
+};
+
+export const resetAutoParoliPattern = (pattern) => {
+  return {
+    ...pattern,
+    ...autoParoliPatternResetValues,
+  };
 };

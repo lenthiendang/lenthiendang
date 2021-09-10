@@ -1,4 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
+import isEqual from 'lodash/isEqual';
 import { batch } from 'react-redux';
 import {
   readLocalAwakenPatterns,
@@ -14,6 +15,7 @@ import AwakenPatternList from '../../domains/Awakening/models/AwakenPatternList'
 import {
   checkPatternResult,
   getPatternUpdateBetOrders,
+  resetAutoParoliPattern,
   resetPattern,
   startPattern,
   togglePatternActive,
@@ -24,6 +26,7 @@ const awakeningPatterns = new AwakenPatternList(readLocalAwakenPatterns());
 const initSumProfit = {
   paroli: 0,
   autoParoli: 0,
+  miniAwaken: 0,
   martingale: 0,
   total: 0,
 };
@@ -88,7 +91,9 @@ const getBetData = (patternList, betAccountType) => {
         betRatio,
         betRatioPos,
       } = pattern;
-      const isMartingale = type === PATTERN_TYPE.MARTINGALE;
+      // MiniAwaken is a Martingale other type
+      const isMartingale =
+        type === PATTERN_TYPE.MARTINGALE || type === PATTERN_TYPE.MINI_AWAKEN;
 
       if (isRunning) {
         // eslint-disable-next-line no-nested-ternary
@@ -153,6 +158,9 @@ export const checkResult = () => (dispatch, getState) => {
       case PATTERN_TYPE.MARTINGALE:
         sumProfitNow.martingale += pattern.recentProfit;
         break;
+      case PATTERN_TYPE.MINI_AWAKEN:
+        sumProfitNow.miniAwaken += pattern.recentProfit;
+        break;
       default:
         sumProfitNow.paroli += pattern.recentProfit;
     }
@@ -163,6 +171,7 @@ export const checkResult = () => (dispatch, getState) => {
   sumProfitNow.paroli = getNumberToFix(sumProfitNow.paroli, 2);
   sumProfitNow.autoParoli = getNumberToFix(sumProfitNow.autoParoli, 2);
   sumProfitNow.martingale = getNumberToFix(sumProfitNow.martingale, 2);
+  sumProfitNow.miniAwaken = getNumberToFix(sumProfitNow.miniAwaken, 2);
   sumProfitNow.total = getNumberToFix(sumProfitNow.total, 2);
 
   dispatch(setPatternList(newList));
@@ -263,8 +272,7 @@ export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
 };
 
 const getParoliOftenAppear = (candleList) =>
-  candleList.map((candleString, index) => ({
-    id: index + 1,
+  candleList.map((candleString) => ({
     condition: candleString.type.charAt(0),
     betOrders: getDefaultParoliBetOrder(candleString.type.slice(1)),
   }));
@@ -290,17 +298,36 @@ export const updatePatternList = () => (dispatch, getState) => {
   dispatch(setPatternList(newList));
 };
 
+const getParoliPatternString = (patternList) =>
+  patternList
+    .filter((pattern) => pattern.type === PATTERN_TYPE.AUTO_PAROLI)
+    .map(
+      (p) =>
+        `${p.condition}${p.betOrders
+          .map((bet) => (bet.betType ? 'T' : 'G'))
+          .join('')}`
+    );
+
 export const updateAutoParoliPatternList = () => (dispatch, getState) => {
   const {
     price: { list },
     awakening: { patternList },
   } = getState((state) => state);
   const candleList = getCandlesAppear(list, 7, false).max;
-  const newGoodParoli = getParoliOftenAppear(candleList);
+  const candlePatterns = candleList.map((candle) => candle.type);
+  const currentAutoPatterns = getParoliPatternString(patternList);
+  const isEqualPatterns = isEqual(candlePatterns, currentAutoPatterns);
+  if (isEqualPatterns) {
+    return;
+  }
 
+  const newGoodParoli = getParoliOftenAppear(candleList);
   const newList = patternList.map((pattern) => {
     if (pattern.type === PATTERN_TYPE.AUTO_PAROLI) {
-      return { ...pattern, ...newGoodParoli[pattern.id - 1] };
+      return {
+        ...resetAutoParoliPattern(pattern),
+        ...newGoodParoli[pattern.id - 1],
+      };
     }
     return pattern;
   });

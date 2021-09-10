@@ -252,6 +252,7 @@
     "electron-updater": "^4.3.8",
     "framer-motion": "^4.1.17",
     "history": "4.x.x",
+    "lodash": "^4.17.21",
     "lowdb": "^2.1.0",
     "path-browserify": "^1.0.1",
     "playwright": "^1.14.0",

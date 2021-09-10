@@ -5,7 +5,7 @@ export const PATTERN_TYPE = {
   PAROLI: 'PAROLI',
   MARTINGALE: 'MARTINGALE',
   AUTO_PAROLI: 'AUTO_PAROLI',
-  MINI_AWAKEN: 'MINI_AWAKEN',
+  MINI_AWAKEN: 'MINI_AWAKEN', // is type work like Martingale
 };
 
 export const PATTERN_FIELD = {
@@ -18,6 +18,7 @@ export const PATTERN_FIELD = {
   MAX_WIN_COUNT: 'maxWinCount',
   WIN_LOOP: 'martingaleWinLoop',
   BET_AMOUNTS: 'betAmounts',
+  MINI_LOSES: 'miniAwakenLoseList',
 };
 
 export const PATTERN_REALTIME_PROPS = [
@@ -171,7 +172,7 @@ export const getCandlesAppear = (list, length, isDuplicated) => {
   };
 };
 
-const paroliDefaultAmounts = [1, 1.95, 3.8, 7.4, 14.4, 28, 54, 107];
+const paroliDefaultAmounts = [1, 1.95, 3.8, 7.41, 14.46, 28, 54.98, 107.2];
 
 export const getDefaultParoliBetOrder = (betTypeString) => {
   if (!betTypeString) return [];
@@ -183,3 +184,12 @@ export const getDefaultParoliBetOrder = (betTypeString) => {
 
 export const getNumberToFix = (number, digits) =>
   Number(Number(number).toFixed(digits));
+
+// exp valid values: 1 || 1-2-3-4
+export const validateIntegerListString = (listString) => {
+  return (listString && listString.startsWith('-')) || listString.endsWith('-')
+    ? false
+    : listString
+        .split('-')
+        .every((loopNumber) => Number.isInteger(Number(loopNumber)));
+};

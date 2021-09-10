@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   Button,
+  Flex,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -29,23 +30,25 @@ import {
 } from '../awakeningUtil';
 import AwakenPattern from '../models/AwakenPattern';
 import { getConditionGroupType } from '../models/awakenPatternUtils';
+import AutoParoliForm from './AutoParoliForm';
+import MiniAwakenForm from './MiniAwakenForm';
 import ParoliForm from './ParoliForm';
 import MartingaleForm from './MartingaleForm';
 
 const initPattern = {
-  [PATTERN_FIELD.TYPE]: PATTERN_TYPE.PAROLI,
+  [PATTERN_FIELD.TYPE]: '',
   [PATTERN_FIELD.CONDITION]: '',
   [PATTERN_FIELD.BET_ORDERS]: '',
   [PATTERN_FIELD.BET_LOOP]: '',
   [PATTERN_FIELD.BET_RATIOS]: '',
+  [PATTERN_FIELD.MINI_LOSES]: '',
 };
 
 function AwakenFormModal(props) {
-  const dispatch = useDispatch();
   const { mode = 'ADD', isOpenModal, onCloseModal, patternInput } = props;
+  const dispatch = useDispatch();
   const isAddMode = mode === 'ADD';
   const candles = useSelector((state) => state.price.list);
-  // const { originalBalance } = useSelector((state) => state.account);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [pattern] = useState(
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
@@ -68,22 +71,23 @@ function AwakenFormModal(props) {
       betOrders,
       betLoop,
       betRatios,
-      type: PATTERN_TYPE.PAROLI,
+      type: pattern.type,
       isActive: false,
     };
   };
 
+  // use this function to Martingale & MiniAwaken( MiniMartingale)
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const mapToNewMartingalePattern = (pattern) => {
     const betAmounts = pattern.betAmounts.split('-');
     const lastCandles = candles.slice((betAmounts.length + 1) * -1);
-
-    const maxWinCount = Number(pattern.maxWinCount);
     const condition = lastCandles[0].type ? 'T' : 'G';
     const betOrders = lastCandles.slice(1).map((candle, index) => ({
       betType: index === 0 ? candle.type : !candle.type,
       betAmount: Number(betAmounts[index]),
     }));
+
+    const maxWinCount = Number(pattern.maxWinCount || -1);
     const totalBetAmount = betAmounts.reduce(
       (acc, amount) => acc + Number(amount),
       0
@@ -95,22 +99,36 @@ function AwakenFormModal(props) {
             getNumberToFix(Number(percent / 100) * totalBetAmount, 2)
           )
       : [];
+    const miniAwakenLoseList = pattern.miniAwakenLoseList
+      ? pattern.miniAwakenLoseList.split('-').map((number) => Number(number))
+      : [];
 
     return {
-      type: PATTERN_TYPE.MARTINGALE,
+      type: pattern.type,
       maxWinCount,
       condition,
       betOrders,
       martingaleWinLoop,
+      miniAwakenLoseList,
     };
   };
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const handleAddFormSubmit = (pattern) => {
-    const newPattern =
-      pattern.type === PATTERN_TYPE.PAROLI
-        ? mapToNewParoliPattern(pattern)
-        : mapToNewMartingalePattern(pattern);
+    let newPattern;
+    switch (pattern.type) {
+      case PATTERN_TYPE.MARTINGALE:
+        newPattern = mapToNewMartingalePattern(pattern);
+        break;
+      case PATTERN_TYPE.AUTO_PAROLI:
+        newPattern = mapToNewParoliPattern(pattern);
+        break;
+      case PATTERN_TYPE.MINI_AWAKEN:
+        newPattern = mapToNewMartingalePattern(pattern);
+        break;
+      default:
+        newPattern = mapToNewParoliPattern(pattern);
+    }
     dispatch(addPattern(new AwakenPattern(newPattern).getObject()));
     onClose();
   };
@@ -125,7 +143,7 @@ function AwakenFormModal(props) {
 
   // eslint-disable-next-line @typescript-eslint/no-shadow
   function mapParoliPatternToInputObject(pattern) {
-    const { id, condition, betOrders, betLoop, betRatioInit } = pattern;
+    const { id, type, condition, betOrders, betLoop, betRatioInit } = pattern;
     // eslint-disable-next-line @typescript-eslint/no-shadow
     let patternInput = {};
     if (condition && betOrders && betLoop && betRatioInit) {
@@ -138,7 +156,7 @@ function AwakenFormModal(props) {
 
       patternInput = {
         [PATTERN_FIELD.ID]: id,
-        [PATTERN_FIELD.TYPE]: PATTERN_TYPE.PAROLI,
+        [PATTERN_FIELD.TYPE]: type,
         [PATTERN_FIELD.BET_LOOP]: betLoopInput,
         [PATTERN_FIELD.CONDITION]: conditionInput,
         [PATTERN_FIELD.BET_RATIOS]: betRatiosInput,
@@ -148,17 +166,36 @@ function AwakenFormModal(props) {
     return patternInput;
   }
 
-  const renderFormTabs = () => (
-    <Tabs variant="soft-rounded" colorScheme="green">
-      <TabList>
-        <Tab>AWAKEN SĂN RẮN</Tab>
-        <Tab>AWAKEN GẤP THÉP</Tab>
+  const tabStyles = {
+    width: 'calc(33%)',
+    fontSize: '14px',
+    fontWeight: 'bold',
+    color: 'white',
+    background: '#22c55e',
+  };
+
+  const renderAddForm = () => (
+    <Tabs variant="soft-enclosed">
+      <TabList flex justifyContent="space-between">
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Tab {...tabStyles}>SĂN RẮN</Tab>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Tab {...tabStyles}>GẤP THÉP</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
-          <ParoliForm pattern={pattern} onSubmit={handleAddFormSubmit} />
+          <Flex justify="center" fontWeight="bold">
+            SĂN RẮN
+          </Flex>
+          <ParoliForm
+            pattern={{ ...pattern, type: PATTERN_TYPE.PAROLI }}
+            onSubmit={handleAddFormSubmit}
+          />
         </TabPanel>
         <TabPanel>
+          <Flex justify="center" fontWeight="bold">
+            GẤP THÉP
+          </Flex>
           <MartingaleForm
             pattern={{ ...pattern, type: PATTERN_TYPE.MARTINGALE }}
             onSubmit={handleAddFormSubmit}
@@ -167,6 +204,26 @@ function AwakenFormModal(props) {
       </TabPanels>
     </Tabs>
   );
+
+  const editForm = () => {
+    const forms = {
+      [PATTERN_TYPE.PAROLI]: (
+        <ParoliForm
+          mode="EDIT"
+          pattern={mapParoliPatternToInputObject(patternInput)}
+          onSubmit={handleEditFormSubmit}
+        />
+      ),
+      [PATTERN_TYPE.AUTO_PAROLI]: (
+        <AutoParoliForm
+          mode="EDIT"
+          pattern={mapParoliPatternToInputObject(patternInput)}
+          onSubmit={handleEditFormSubmit}
+        />
+      ),
+    };
+    return forms[patternInput.type];
+  };
 
   return (
     <>
@@ -190,17 +247,7 @@ function AwakenFormModal(props) {
         <ModalContent>
           <ModalHeader>{isAddMode ? 'Thêm mẫu' : 'Sửa'}</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
-            {isAddMode ? (
-              renderFormTabs()
-            ) : (
-              <ParoliForm
-                mode="EDIT"
-                pattern={mapParoliPatternToInputObject(patternInput)}
-                onSubmit={handleEditFormSubmit}
-              />
-            )}
-          </ModalBody>
+          <ModalBody>{isAddMode ? renderAddForm() : editForm()}</ModalBody>
         </ModalContent>
       </Modal>
     </>
