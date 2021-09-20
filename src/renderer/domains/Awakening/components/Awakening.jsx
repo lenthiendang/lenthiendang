@@ -137,7 +137,7 @@ const Awakening = () => {
               {tableHeaderTd('Thế nến')}
               {tableHeaderTd('Lệnh đặt')}
               {tableHeaderTd('Tổng cược')}
-              {isMartingale && tableHeaderTd('Lãi ảo')}
+              {(isMartingale || isMiniAwaken) && tableHeaderTd('Lãi ảo')}
               {tableHeaderTd('Lãi')}
               {tableHeaderTd('Thắng/Thua')}
               {tableHeaderTd('Bước')}
@@ -157,7 +157,7 @@ const Awakening = () => {
               {isMiniAwaken && (
                 <>
                   {tableHeaderTd('Gấp thép Awaken')}
-                  {tableHeaderTd('Mini Thua/thắng')}
+                  {/* {tableHeaderTd('Mini Thua/thắng')} */}
                   {tableHeaderTd('Mức thua(lần)')}
                   {tableHeaderTd('Đổi lệnh')}
                 </>
@@ -197,7 +197,7 @@ const Awakening = () => {
                     {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
                     {tableRowTd(renderBetOrderElement(pattern))}
                     {tableRowTd(betAmount)}
-                    {isMartingale &&
+                    {(isMartingale || isMiniAwaken) &&
                       tableRowTd(Number(virtualProfit).toFixed(2))}
                     {tableRowTd(Number(profit).toFixed(2))}
                     {tableRowTd(
@@ -222,9 +222,9 @@ const Awakening = () => {
                     {isMiniAwaken && (
                       <>
                         {tableRowTd(maxWinCount || '')}
-                        {tableRowTd(
-                          `${pattern.miniAwakenLoseCount}/${pattern.miniAwakenWinCount}`
-                        )}
+                        {/* {tableRowTd( */}
+                        {/*  `${pattern.miniAwakenLoseCount}/${pattern.miniAwakenWinCount}` */}
+                        {/* )} */}
                         {tableRowTd(miniAwakenLoseList[miniAwakenLosePos])}
                         {tableRowTd(betOrderUpdatedCount)}
                       </>
@@ -252,11 +252,13 @@ const Awakening = () => {
     >
       <TabList>
         <Tab>AUTO SĂN RẮN</Tab>
+        <Tab>MINI AWAKEN</Tab>
         <Tab>SĂN RẮN</Tab>
         <Tab>GẤP THÉP</Tab>
       </TabList>
-      <TabPanels>
+      <TabPanels p="0">
         <TabPanel>{renderMainTable(PATTERN_TYPE.AUTO_PAROLI)}</TabPanel>
+        <TabPanel>{renderMainTable(PATTERN_TYPE.MINI_AWAKEN)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.MARTINGALE)}</TabPanel>
       </TabPanels>
@@ -323,6 +325,9 @@ const Awakening = () => {
             Lãi Auto săn rắn: {Number(sumProfit.autoParoli).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
+            Lãi Mini Awaken: {Number(sumProfit.miniAwaken).toFixed(2)}
+          </Text>
+          <Text color="yellow" px="5">
             Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
@@ -345,6 +350,11 @@ const Awakening = () => {
           label: 'Run Auto săn rắn',
           colorScheme: 'green',
           onClick: () => dispatch(runPatterns(PATTERN_TYPE.AUTO_PAROLI)),
+        })}
+        {renderButton({
+          label: 'Run Mini Awaken',
+          colorScheme: 'green',
+          onClick: () => dispatch(runPatterns(PATTERN_TYPE.MINI_AWAKEN)),
         })}
         {renderButton({
           label: 'Run Săn rắn',

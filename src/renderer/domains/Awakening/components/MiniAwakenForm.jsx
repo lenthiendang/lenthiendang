@@ -66,7 +66,6 @@ export default function MiniAwakenForm({ pattern, onSubmit }) {
         <InputField
           name={PATTERN_FIELD.MAX_WIN_COUNT}
           control={control}
-          type="number"
           label="2. Gấp thép Awaken"
           placeHolder="VD: 20"
         />

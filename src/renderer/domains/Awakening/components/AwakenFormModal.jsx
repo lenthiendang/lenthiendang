@@ -181,6 +181,8 @@ function AwakenFormModal(props) {
         <Tab {...tabStyles}>SĂN RẮN</Tab>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <Tab {...tabStyles}>GẤP THÉP</Tab>
+        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+        <Tab {...tabStyles}>MINI AWAKEN</Tab>
       </TabList>
       <TabPanels>
         <TabPanel>
@@ -198,6 +200,15 @@ function AwakenFormModal(props) {
           </Flex>
           <MartingaleForm
             pattern={{ ...pattern, type: PATTERN_TYPE.MARTINGALE }}
+            onSubmit={handleAddFormSubmit}
+          />
+        </TabPanel>
+        <TabPanel>
+          <Flex justify="center" fontWeight="bold">
+            MINI AWAKEN
+          </Flex>
+          <MiniAwakenForm
+            pattern={{ ...pattern, type: PATTERN_TYPE.MINI_AWAKEN }}
             onSubmit={handleAddFormSubmit}
           />
         </TabPanel>
