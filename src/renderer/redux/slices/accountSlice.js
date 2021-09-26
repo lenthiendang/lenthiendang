@@ -6,7 +6,6 @@ const initialState = {
   balance: undefined,
   profit: undefined,
   isAuto: false,
-  isStop: false,
 };
 
 const accountSlice = createSlice({
@@ -58,10 +57,7 @@ const accountSlice = createSlice({
       state.totalBet += action.payload;
     },
     toggleAuto: (state, action) => {
-      state.isAuto = !state.isStop && action.payload;
-    },
-    toggleStop: (state, action) => {
-      state.isStop = action.payload;
+      state.isAuto = action.payload;
     },
     setStopLoss: (state, action) => {
       state.stopLossPoint = action.payload;
@@ -84,7 +80,6 @@ export const {
   setTotalBet,
   addTotalBet,
   toggleAuto,
-  toggleStop,
   reset,
 } = accountSlice.actions;
 

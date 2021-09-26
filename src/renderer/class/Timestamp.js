@@ -12,18 +12,18 @@ class Timestamp {
   toggleBetSession() {
     // prevent delayed time
     // depend on exchange server
-    this.isBetSession = this.counter > 3 && this.counter <= 6;
+    this.isBetSession = this.counter > 5 && this.counter <= 10;
   }
 
   count() {
     // set 'counter' by 'timestamp' (60s frame)
     // using .ceil instead of .floor
-    this.counter += Math.ceil((6000 - (this.timestamp % 6000)) / 1000);
+    this.counter += Math.ceil((10000 - (this.timestamp % 10000)) / 1000);
     // toggle 'isBetSession' by 'counter'
     this.toggleBetSession();
-    // format 'counter' in 30s frame
-    if (!(this.counter <= 3 && this.counter > 0)) {
-      this.counter -= 3;
+    // format 'counter' in 5s frame
+    if (!(this.counter <= 5)) {
+      this.counter -= 5;
     }
   }
 }
