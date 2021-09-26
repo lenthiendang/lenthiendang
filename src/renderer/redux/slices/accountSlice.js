@@ -2,7 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 import User from '../../class/User';
 
 const initialState = {
-  originalBalance: 100,
+  originalBalance: undefined,
   balance: undefined,
   profit: undefined,
   isAuto: false,
