@@ -193,3 +193,51 @@ export const validateIntegerListString = (listString) => {
         .split('-')
         .every((loopNumber) => Number.isInteger(Number(loopNumber)));
 };
+
+export const VALID_FUNDS = [10, 50, 100, 200];
+
+export const INVALID_FUNDS = 0;
+
+export const MINI_AWAKEN_ID_GROUP = {
+  USD_10: {
+    amount: 1,
+    idList: [11, 12, 13],
+  },
+  USD_50: {
+    amount: 2,
+    idList: [11, 12, 13, 14, 15, 16],
+  },
+  USD_100: {
+    amount: 1,
+    idList: [19, 20, 21, 22, 23],
+  },
+  USD_200: {
+    amount: 2,
+    idList: [19, 20, 21, 22, 23, 24],
+  },
+};
+
+const getValidFundsValue = (funds) => {
+  if (!funds || funds <= 0 || funds < VALID_FUNDS[0]) return INVALID_FUNDS;
+  for (let i = VALID_FUNDS.length - 1; i >= 0; i--) {
+    if (funds >= VALID_FUNDS[i]) return VALID_FUNDS[i];
+  }
+  return INVALID_FUNDS;
+};
+
+export const getRandomMiniAwakenIds = (funds) => {
+  const validFunds = getValidFundsValue(funds);
+  if (validFunds === INVALID_FUNDS) return [];
+  const idListResult = [];
+  const randomMiniAwaken = MINI_AWAKEN_ID_GROUP[`USD_${validFunds}`];
+  const { idList } = randomMiniAwaken;
+  for (let i = 0; i < randomMiniAwaken.amount; i++) {
+    let randomId = idList[Math.floor(Math.random() * idList.length)];
+    while (idListResult.includes(randomId)) {
+      randomId = idList[Math.floor(Math.random() * idList.length)];
+    }
+    idListResult.push(randomId);
+  }
+  // eslint-disable-next-line consistent-return
+  return idListResult;
+};

@@ -208,14 +208,13 @@ const handleMiniAwakenBetFailed = (pattern) => {
       pattern.miniAwakenWinCount
     );
     pattern.isVirtualRun = false;
-    pattern.patternPos = 0; // câu hỏi số 1
+    pattern.patternPos = 0;
     pattern.miniAwakenWinCount = 0;
     pattern.miniAwakenLoseCount = 0;
   }
 
   // if lose a martingale pattern
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
-    // pattern.patternPos = 0; // câu hỏi số 2
     pattern.loseCount += 1;
     if (pattern.isVirtualRun) {
       pattern.profitLoop = 0;
@@ -256,7 +255,6 @@ const handleMartingaleBetSuccess = (pattern, candles) => {
   }
 
   if (pattern.winCount % pattern.maxWinCount === 0) {
-    console.log('updateMartingaleBetOrders: ', pattern.winCount);
     updateMartingaleBetOrders(pattern, candles);
   }
 };
@@ -299,6 +297,16 @@ export const togglePatternActive = (pattern) => {
   return {
     ...pattern,
     isActive: !pattern.isActive,
+    isRunning: false,
+    betRatioPos: 0,
+    patternPos: 0,
+  };
+};
+
+export const activePattern = (pattern, isActive = true) => {
+  return {
+    ...pattern,
+    isActive,
     isRunning: false,
     betRatioPos: 0,
     patternPos: 0,

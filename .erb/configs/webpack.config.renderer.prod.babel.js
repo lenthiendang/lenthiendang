@@ -108,6 +108,11 @@ export default merge(baseConfig, {
           },
         },
       },
+      // sound
+      {
+        test: /\.mp3$/,
+        loader: 'file-loader',
+      },
       // EOT Font
       {
         test: /\.eot(\?v=\d+\.\d+\.\d+)?$/,

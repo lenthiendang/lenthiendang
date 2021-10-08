@@ -1,33 +1,29 @@
-import {
-  Button,
-  Center,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalHeader,
-  ModalOverlay,
-  useDisclosure,
-} from '@chakra-ui/react';
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   checkResult,
+  setProfitResult,
   startBet,
   updateAutoParoliPatternList,
   updatePatternList,
 } from '../../../redux/slices/awakeningSlice';
-import Awakening from './Awakening';
+import RandomAwakening from './RandomAwakening';
 
 function MainLayout() {
   const dispatch = useDispatch();
   const candles = useSelector((state) => state.price.list);
-  const awakenDisclosure = useDisclosure();
-  const { isOpen, onOpen, onClose } = awakenDisclosure;
+  const patternList = useSelector((state) => state.awakening.patternList);
+  const isRunning = patternList.some((pattern) => pattern.isActive === true);
 
   useEffect(() => {
     dispatch(updatePatternList());
   }, [dispatch]);
+
+  useEffect(() => {
+    if (isRunning) {
+      dispatch(setProfitResult(0));
+    }
+  }, [dispatch, isRunning]);
 
   useEffect(() => {
     if (candles && candles.length > 0) {
@@ -39,21 +35,7 @@ function MainLayout() {
 
   return (
     <>
-      <Button colorScheme="green" onClick={onOpen}>
-        Awaken
-      </Button>
-      <Modal isOpen={isOpen} onClose={onClose} size="6xl">
-        <ModalOverlay />
-        <ModalContent bg="blackAlpha.800" color="whiteAlpha.900">
-          <ModalHeader pb="0">
-            <Center>AWAKENING</Center>
-          </ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <Awakening />
-          </ModalBody>
-        </ModalContent>
-      </Modal>
+      <RandomAwakening />
     </>
   );
 }

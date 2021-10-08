@@ -9,10 +9,12 @@ import {
   getCandlesAppear,
   getDefaultParoliBetOrder,
   getNumberToFix,
+  getRandomMiniAwakenIds,
   PATTERN_TYPE,
 } from '../../domains/Awakening/awakeningUtil';
 import AwakenPatternList from '../../domains/Awakening/models/AwakenPatternList';
 import {
+  activePattern,
   checkPatternResult,
   getPatternUpdateBetOrders,
   resetAutoParoliPattern,
@@ -35,7 +37,11 @@ const initialState = {
   patternList: awakeningPatterns.list,
   maxId: awakeningPatterns.maxId,
   sumProfit: initSumProfit,
+  betAmount: 0,
   totalBetAmount: 0,
+  stopLossPoint: 0,
+  takeProfitPoint: 0,
+  profitResult: 0,
 };
 
 const awakeningSlice = createSlice({
@@ -51,6 +57,18 @@ const awakeningSlice = createSlice({
     setSumProfit: (state, action) => {
       state.sumProfit = action.payload;
     },
+    setProfitResult: (state, action) => {
+      state.profitResult = action.payload;
+    },
+    setBetAmount: (state, action) => {
+      state.betAmount = action.payload;
+    },
+    setStopLossPoint: (state, action) => {
+      state.stopLossPoint = action.payload;
+    },
+    setTakeProfitPoint: (state, action) => {
+      state.takeProfitPoint = action.payload;
+    },
     setTotalBetAmount: (state, action) => {
       state.totalBetAmount = action.payload;
     },
@@ -63,8 +81,16 @@ export const selectPattern = (id) => (state) =>
   state.awakening.patternList.find((pattern) => id === pattern.id);
 
 // Actions
-export const { setPatternList, setMaxId, setSumProfit, setTotalBetAmount } =
-  awakeningSlice.actions;
+export const {
+  setPatternList,
+  setMaxId,
+  setSumProfit,
+  setProfitResult,
+  setBetAmount,
+  setTotalBetAmount,
+  setStopLossPoint,
+  setTakeProfitPoint,
+} = awakeningSlice.actions;
 
 const getBetData = (patternList, betAccountType) => {
   const [upBetting, downBetting] = [
@@ -134,6 +160,9 @@ export const startBet = () => (dispatch, getState) => {
     pattern.recentBetAmount = 0;
   });
   dispatch(setPatternList(newList));
+  dispatch(
+    setBetAmount(Number(betData[0].betAmount) + Number(betData[1].betAmount))
+  );
   dispatch(setTotalBetAmount(newTotalBetAmount));
   console.log(betData);
 };
@@ -141,8 +170,9 @@ export const startBet = () => (dispatch, getState) => {
 export const checkResult = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList, sumProfit },
+    awakening: { patternList, sumProfit, stopLossPoint, takeProfitPoint },
   } = getState((state) => state);
+  let isRunning = false;
 
   const newList = patternList.map((pattern) =>
     checkPatternResult(pattern, list)
@@ -150,6 +180,9 @@ export const checkResult = () => (dispatch, getState) => {
   const sumProfitNow = { ...sumProfit };
 
   newList.forEach((pattern) => {
+    if (pattern.isActive === true) {
+      isRunning = true;
+    }
     sumProfitNow.total += pattern.recentProfit;
     switch (pattern.type) {
       case PATTERN_TYPE.AUTO_PAROLI:
@@ -176,6 +209,16 @@ export const checkResult = () => (dispatch, getState) => {
 
   dispatch(setPatternList(newList));
   dispatch(setSumProfit(sumProfitNow));
+  if (isRunning) {
+    dispatch(setProfitResult(Number(sumProfitNow.total)));
+  }
+  if (
+    (takeProfitPoint !== 0 && sumProfitNow.total >= takeProfitPoint) ||
+    (stopLossPoint !== 0 && sumProfitNow.total <= stopLossPoint)
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    dispatch(resetAllPatterns());
+  }
 };
 
 export const toggleActive =
@@ -200,6 +243,7 @@ export const resetAllPatterns = () => (dispatch, getState) => {
   const newPatternList = patternList.map((pattern) => resetPattern(pattern));
   dispatch(setPatternList(newPatternList));
   dispatch(setSumProfit(initSumProfit));
+  dispatch(setBetAmount(0));
 };
 
 export const stopPatterns = (type) => (dispatch, getState) => {
@@ -347,6 +391,32 @@ export const runPatterns =
     }));
     dispatch(setPatternList(newPatternList));
   };
+
+export const pauseAllAwakenPatterns = () => (dispatch, getState) => {
+  const {
+    awakening: { patternList },
+  } = getState((state) => state);
+
+  const newPatternList = patternList.map((pattern) =>
+    activePattern(pattern, false)
+  );
+  dispatch(setPatternList(newPatternList));
+};
+
+export const runRandomPatterns = (funds) => (dispatch, getState) => {
+  const {
+    awakening: { patternList },
+    account: { originalBalance },
+  } = getState((state) => state);
+  const fundsValue = funds ? Number(funds) : Number(originalBalance);
+  const runningPatternIds = getRandomMiniAwakenIds(fundsValue);
+  const newPatternList = patternList.map((pattern) => {
+    return runningPatternIds.includes(pattern.id)
+      ? activePattern(pattern, true)
+      : pattern;
+  });
+  dispatch(setPatternList(newPatternList));
+};
 
 // Reducer
 export default awakeningSlice.reducer;

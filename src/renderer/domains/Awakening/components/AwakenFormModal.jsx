@@ -33,7 +33,6 @@ import { getConditionGroupType } from '../models/awakenPatternUtils';
 import AutoParoliForm from './AutoParoliForm';
 import MiniAwakenForm from './MiniAwakenForm';
 import ParoliForm from './ParoliForm';
-import MartingaleForm from './MartingaleForm';
 
 const initPattern = {
   [PATTERN_FIELD.TYPE]: '',
@@ -180,8 +179,6 @@ function AwakenFormModal(props) {
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <Tab {...tabStyles}>SĂN RẮN</Tab>
         {/* eslint-disable-next-line react/jsx-props-no-spreading */}
-        <Tab {...tabStyles}>GẤP THÉP</Tab>
-        {/* eslint-disable-next-line react/jsx-props-no-spreading */}
         <Tab {...tabStyles}>MINI AWAKEN</Tab>
       </TabList>
       <TabPanels>
@@ -191,15 +188,6 @@ function AwakenFormModal(props) {
           </Flex>
           <ParoliForm
             pattern={{ ...pattern, type: PATTERN_TYPE.PAROLI }}
-            onSubmit={handleAddFormSubmit}
-          />
-        </TabPanel>
-        <TabPanel>
-          <Flex justify="center" fontWeight="bold">
-            GẤP THÉP
-          </Flex>
-          <MartingaleForm
-            pattern={{ ...pattern, type: PATTERN_TYPE.MARTINGALE }}
             onSubmit={handleAddFormSubmit}
           />
         </TabPanel>

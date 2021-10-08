@@ -113,10 +113,12 @@ const Awakening = () => {
         bg="transparent"
         color="whiteAlpha.900"
         h="40vh"
+        mt="2vh"
         px="0"
-        py="2vh"
-        maxHeight="40vh"
+        pb="2vh"
+        maxHeight="36vh"
         overflowY="scroll"
+        borderTop="2px solid #000"
         css={{
           '&::-webkit-scrollbar': {
             width: '1px',
@@ -127,6 +129,12 @@ const Awakening = () => {
           '&::-webkit-scrollbar-thumb': {
             background: 'gray',
             borderRadius: '24px',
+          },
+          '& thead th': {
+            background: '#000000',
+            position: 'sticky',
+            zIndex: 1,
+            top: 0,
           },
         }}
       >
@@ -254,13 +262,11 @@ const Awakening = () => {
         <Tab>AUTO SĂN RẮN</Tab>
         <Tab>MINI AWAKEN</Tab>
         <Tab>SĂN RẮN</Tab>
-        <Tab>GẤP THÉP</Tab>
       </TabList>
       <TabPanels p="0">
         <TabPanel>{renderMainTable(PATTERN_TYPE.AUTO_PAROLI)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.MINI_AWAKEN)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
-        <TabPanel>{renderMainTable(PATTERN_TYPE.MARTINGALE)}</TabPanel>
       </TabPanels>
     </Tabs>
   );
@@ -331,9 +337,6 @@ const Awakening = () => {
             Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
-            Lãi Gấp thép: {Number(sumProfit.martingale).toFixed(2)}
-          </Text>
-          <Text color="yellow" px="5">
             Tổng lãi: {Number(sumProfit.total).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
@@ -360,11 +363,6 @@ const Awakening = () => {
           label: 'Run Săn rắn',
           colorScheme: 'green',
           onClick: () => dispatch(runPatterns(PATTERN_TYPE.PAROLI)),
-        })}
-        {renderButton({
-          label: 'Run Gấp thép',
-          colorScheme: 'green',
-          onClick: () => dispatch(runPatterns(PATTERN_TYPE.MARTINGALE)),
         })}
       </Flex>
       {renderTabs()}
