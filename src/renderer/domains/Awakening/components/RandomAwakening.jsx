@@ -13,9 +13,8 @@ import RandomAwakenSetting from './RandomAwakenSetting';
 
 export default function RandomAwakening() {
   const dispatch = useDispatch();
-  const { patternList, betAmount, sumProfit, profitResult } = useSelector(
-    (state) => state.awakening
-  );
+  const { patternList, betAmount, totalBetAmount, sumProfit, profitResult } =
+    useSelector((state) => state.awakening);
   const isRunning = patternList.some((pattern) => pattern.isActive === true);
   const originalBalance = useSelector((state) => state.account.originalBalance);
   // eslint-disable-next-line @typescript-eslint/no-shadow
@@ -47,6 +46,7 @@ export default function RandomAwakening() {
       backgroundColor="#350048"
       border="1px solid #FFF"
       borderRadius="5px"
+      px="20px"
     >
       <AwakeningDialog backgroundColor="transparent" enabled={isRunning} />
       <Flex
@@ -54,27 +54,29 @@ export default function RandomAwakening() {
         alignItems="center"
         backgroundColor="transparent"
         color="#FFF"
-        px="20px"
-        width="450px"
+        width="500px"
       >
         {Number(betAmount) !== 0 && (
           <>
-            <Text fontSize="md" fontWeight="bold" p="0 5px 0 10px">
+            <Text fontWeight="bold" p="0 5px 0 10px" fontSize="14px">
               Đặt
             </Text>
-            <Text fontSize="md">{betAmountLabel}</Text>
+            <Text fontSize="14px">{betAmountLabel}</Text>
           </>
         )}
         {!isRunning && profitResult !== 0 && (
-          <Text color="yellow" fontWeight="bold" pl="10px">
+          <Text color="yellow" fontWeight="bold" pl="10px" fontSize="14px">
             {`${profitResult > 0 ? 'Thắng ' : 'Thua '} ${profitResult}`}
           </Text>
         )}
         {Number(sumProfit.miniAwaken) !== 0 && (
-          <Text color="yellow" pl="10px">
+          <Text color="yellow" pl="10px" fontSize="14px">
             Lãi: {Number(sumProfit.miniAwaken).toFixed(2)}
           </Text>
         )}
+        <Text color="yellow" pl="10px" fontSize="14px">
+          Tổng đặt: {Number(totalBetAmount).toFixed(2)}
+        </Text>
         <Button
           mx="10px"
           colorScheme="yellow"

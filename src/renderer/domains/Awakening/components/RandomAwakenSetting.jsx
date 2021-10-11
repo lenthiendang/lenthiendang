@@ -147,7 +147,7 @@ export default function RandomAwakenSetting({
   return (
     <>
       <Button
-        mx="10px"
+        ml="10px"
         colorScheme="yellow"
         color="#350048"
         height="30px"
