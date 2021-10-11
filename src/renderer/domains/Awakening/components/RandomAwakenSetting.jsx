@@ -134,6 +134,7 @@ export default function RandomAwakenSetting({
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <Text fontWeight="bold">Sửa</Text>
         {renderInputs()}
+        {renderFundsInput()}
         <Flex flexDir="column" align="center" pt="4">
           <Button type="submit" w="40%" variant="solid" colorScheme="teal">
             Lưu
