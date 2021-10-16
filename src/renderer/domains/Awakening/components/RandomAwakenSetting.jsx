@@ -24,7 +24,6 @@ import {
   setStopLossPoint,
   setTakeProfitPoint,
 } from '../../../redux/slices/awakeningSlice';
-// eslint-disable-next-line import/no-named-as-default,import/no-named-as-default-member
 import InputField from './FormFields/InputField';
 
 export const FORM_FIELD = {
@@ -71,11 +70,20 @@ export default function RandomAwakenSetting({
     resolver: yupResolver(schema),
   });
 
+  const handleCloseModal = () => {
+    setValue(FORM_FIELD.STOP_LOSS_POINT, '');
+    setValue(FORM_FIELD.TAKE_PROFIT_POINT, '');
+    onClose();
+  };
+
   const handleFormSubmit = (values) => {
-    const stopLoss =
+    let stopLoss =
       values[FORM_FIELD.STOP_LOSS_POINT] === ''
         ? 0
         : values[FORM_FIELD.STOP_LOSS_POINT];
+    if (Number(stopLoss) > 0) {
+      stopLoss = -1 * Number(stopLoss);
+    }
 
     const takeProfit =
       values[FORM_FIELD.TAKE_PROFIT_POINT] === ''
@@ -84,14 +92,7 @@ export default function RandomAwakenSetting({
 
     dispatch(setStopLossPoint(Number(stopLoss)));
     dispatch(setTakeProfitPoint(Number(takeProfit)));
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     handleCloseModal();
-  };
-
-  const handleCloseModal = () => {
-    setValue(FORM_FIELD.STOP_LOSS_POINT, '');
-    setValue(FORM_FIELD.TAKE_PROFIT_POINT, '');
-    onClose();
   };
 
   const renderInputs = () => (
