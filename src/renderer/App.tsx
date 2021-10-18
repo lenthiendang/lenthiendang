@@ -3,25 +3,31 @@ import './App.global.css';
 
 import { Provider as ReduxProvider } from 'react-redux';
 import { ChakraProvider, extendTheme } from '@chakra-ui/react';
+import { BrowserRouter } from 'react-router-dom';
 
 import store from './redux';
 import Main from './pages/Main';
-import Background from './components/Background';
+import { colors } from '../constant/exchanges';
 
 const theme = extendTheme({
   colors: {
-    primary: {},
-    secondary: {},
+    primary: {
+      ...colors.primary,
+    },
+    secondary: {
+      ...colors.secondary,
+    },
   },
 });
 
 export default function App() {
   return (
-    <ReduxProvider store={store}>
-      <ChakraProvider theme={theme}>
-        <Background />
-        <Main />
-      </ChakraProvider>
-    </ReduxProvider>
+    <BrowserRouter>
+      <ReduxProvider store={store}>
+        <ChakraProvider theme={theme}>
+          <Main />
+        </ChakraProvider>
+      </ReduxProvider>
+    </BrowserRouter>
   );
 }

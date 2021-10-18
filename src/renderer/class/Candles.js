@@ -15,7 +15,9 @@ class Candles {
   }
 
   updateCandles() {
-    const newSession = this.list.length ? this.list[this.list.length - 1].session + 1 : 0;
+    const newSession = this.list.length
+      ? this.list[this.list.length - 1].session + 1
+      : 0;
     const newCandle = initRandomCandle(newSession);
     this.list = [...this.list, newCandle];
   }

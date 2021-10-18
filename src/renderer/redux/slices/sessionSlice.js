@@ -1,36 +1,33 @@
 import { createSlice } from '@reduxjs/toolkit';
 
-import Timestamp from '../../class/Timestamp';
-
 const sessionSlice = createSlice({
   name: 'session',
   initialState: {
     isBetSession: null,
-    counter: null,
+    runningTimer: 0,
   },
   reducers: {
-    setCounter: (state, action) => {
-      state.counter = action.payload;
-    },
-
     toggleBetSession: (state, action) => {
       state.isBetSession = action.payload;
+    },
+    increaseRunningTimer: (state) => {
+      state.runningTimer += 1;
     },
   },
 });
 
-export const { setCounter, toggleBetSession } = sessionSlice.actions;
+export const { toggleBetSession, increaseRunningTimer } = sessionSlice.actions;
 
-export const getTimestamp = () => (dispatch, getState) => {
-  const {
-    session: { isBetSession },
-  } = getState((state) => state);
+// export const getTimestamp = () => (dispatch, getState) => {
+//   const {
+//     session: { isBetSession },
+//   } = getState((state) => state);
 
-  const ts = new Timestamp();
-  dispatch(setCounter(ts.counter));
-  if (ts.isBetSession !== isBetSession) {
-    dispatch(toggleBetSession(ts.isBetSession));
-  }
-};
+//   const ts = new Timestamp();
+//   dispatch(setCounter(ts.counter));
+//   if (ts.isBetSession !== isBetSession) {
+//     dispatch(toggleBetSession(ts.isBetSession));
+//   }
+// };
 
 export default sessionSlice.reducer;

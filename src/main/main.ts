@@ -25,6 +25,19 @@ if (!fs.existsSync(dir)) {
   fs.mkdirSync(dir);
 }
 
+process.env.OS = 'mac';
+process.env.EXCHANGE = 'deniex.com';
+process.env.SERVER_HOST = '128.199.137.24';
+process.env.SERVER_PORT = '6001';
+process.env.DOMAIN = process.env.EXCHANGE;
+
+if (process.env.EXCHANGE === 'remitex.net') {
+  process.env.LOCAL_PORT = '9909';
+  process.env.DOMAIN = 'didi.biz';
+} else if (process.env.EXCHANGE === 'deniex.com') {
+  process.env.LOCAL_PORT = '9910';
+  process.env.DOMAIN = 'vista.trade';
+}
 export default class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
@@ -84,12 +97,14 @@ const createWindow = async () => {
 
   mainWindow = new BrowserWindow({
     show: false,
-    width: 1024,
+    width: 1280,
     height: 728,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
+      webSecurity: false,
+
       // preload: path.join(__dirname, 'preload.js'),
     },
   });
@@ -147,3 +162,5 @@ app.on('activate', () => {
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) createWindow();
 });
+
+require('../server');

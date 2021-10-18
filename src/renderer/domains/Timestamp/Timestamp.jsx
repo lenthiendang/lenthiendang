@@ -4,7 +4,7 @@ import { Text } from '@chakra-ui/react';
 
 import theme from '../../styles';
 import Box from '../../components/Box';
-// import StartButton from './StartButton';
+import useGetTimestamp from '../../hooks/useGetTimestamp';
 
 const statuses = [
   { title: 'Kích hoạt', color: 'blue' },
@@ -12,9 +12,12 @@ const statuses = [
 ];
 
 const TimestampBox = () => {
-  const { counter, isBetSession } = useSelector((state) => state.session);
+  const {
+    session: { isBetSession },
+  } = useSelector((store) => store);
 
   const [status] = useState(statuses[0]);
+  const counter = useGetTimestamp();
 
   return (
     <Box
@@ -31,7 +34,6 @@ const TimestampBox = () => {
     >
       {isBetSession ? 'Có thể đặt lệnh' : 'Đang chờ kết quả'}
       <Text fontSize="4xl">{counter || 'Loading'}</Text>
-      {/* <StartButton title={status.title} color={status.color} /> */}
     </Box>
   );
 };

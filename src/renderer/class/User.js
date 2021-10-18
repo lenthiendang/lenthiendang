@@ -1,8 +1,9 @@
+/* eslint-disable no-console */
 import dayjs from 'dayjs';
 
-// import API from './API';
-import { sleep, decodeToken, getExpiredDate } from '../utils';
-// import exchange from '../../constant/exchanges';
+import API from './API';
+import { sleep, decodeToken, getExpiredDate } from '../../utils';
+import exchange from '../../constant/exchanges';
 
 export const checkTokenExpire = (token) =>
   dayjs(getExpiredDate(token)).diff(new Date()) > 10 * 60 * 1000;
@@ -19,7 +20,7 @@ class User {
 
   async init() {
     await this.resetToken();
-    // get info
+
     await this.getBalance();
     await this.getProfile();
     await this.getStatistics();
@@ -30,34 +31,36 @@ class User {
     return { ...this };
   }
 
-  // setAPI() {
-  //   this.api = new API({
-  //     accessToken: this.accessToken,
-  //     refreshToken: this.refreshToken,
-  //   });
-  // }
+  setAPI() {
+    this.api = new API({
+      accessToken: this.accessToken,
+      refreshToken: this.refreshToken,
+    });
+  }
 
-  // async resetToken() {
-  //   try {
-  //     const data = {
-  //       client_id: exchange.client_id,
-  //       grant_type: 'refresh_token',
-  //       refresh_token: this.refreshToken,
-  //     };
-  //     const res = await this.api.fetchFromExchangeServer('token', data);
-  //     this.accessToken = res.access_token;
-  //     this.refreshToken = res.refresh_token;
-  //     this.setAPI();
-  //     this.setDecodedData();
-  //     return true;
-  //   } catch (err) {
-  //     return false;
-  //   }
-  // }
+  async resetToken() {
+    try {
+      const data = {
+        client_id: exchange.client_id,
+        grant_type: 'refresh_token',
+        refresh_token: this.refreshToken,
+      };
+      const res = await this.api.fetchFromExchangeServer('token', data);
+      this.accessToken = res.access_token;
+      this.refreshToken = res.refresh_token;
+      this.setAPI();
+      this.setDecodedData();
+      return true;
+    } catch (err) {
+      console.log(err);
+      return false;
+    }
+  }
 
   setDecodedData() {
     const decode = decodeToken(this.accessToken);
     this.agent = decode.d_id;
+    this.uid = decode.uid;
   }
 
   async autoResetToken() {

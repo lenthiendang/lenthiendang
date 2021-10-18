@@ -1,15 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit';
 
-import priceReducer from './slices/priceSlice';
-import sessionReducer from './slices/sessionSlice';
-import awakeningReducer from './slices/awakeningSlice';
+import metaReducer from './slices/metaSlice';
+import authReducer from './slices/authSlice';
 import accountReducer from './slices/accountSlice';
+import sessionReducer from './slices/sessionSlice';
+import priceReducer from './slices/priceSlice';
+import awakeningReducer from './slices/awakeningSlice';
 
 export default configureStore({
   reducer: {
-    price: priceReducer,
+    meta: metaReducer,
+    auth: authReducer,
     account: accountReducer,
     session: sessionReducer,
+    price: priceReducer,
     awakening: awakeningReducer,
   },
   devTools: true,
