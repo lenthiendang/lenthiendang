@@ -8,6 +8,7 @@ import {
   updatePatternList,
 } from '../../../redux/slices/awakeningSlice';
 import RandomAwakening from './RandomAwakening';
+import useSocket from '../hooks/useSocket';
 
 function MainLayout() {
   const dispatch = useDispatch();
@@ -15,6 +16,7 @@ function MainLayout() {
   const patternList = useSelector((state) => state.awakening.patternList);
   const isRunning = patternList.some((pattern) => pattern.isActive === true);
 
+  useSocket();
   useEffect(() => {
     dispatch(updatePatternList());
   }, [dispatch]);
