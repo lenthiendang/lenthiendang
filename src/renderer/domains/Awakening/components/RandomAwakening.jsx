@@ -16,7 +16,7 @@ export default function RandomAwakening() {
   const { patternList, betAmount, totalBetAmount, sumProfit, profitResult } =
     useSelector((state) => state.awakening);
   const isRunning = patternList.some((pattern) => pattern.isActive === true);
-  const originalBalance = useSelector((state) => state.account.originalBalance);
+  const balance = useSelector((state) => state.account.balance);
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const fundsOptions = ['', ...VALID_FUNDS];
   const [funds, setFunds] = useState('');
@@ -82,7 +82,7 @@ export default function RandomAwakening() {
           colorScheme="yellow"
           color="#350048"
           height="30px"
-          disabled={!(originalBalance && originalBalance >= 10)}
+          disabled={!(balance && balance >= 10)}
           onClick={handleRandomAwaken}
         >
           {isRunning ? 'Stop' : 'Awaken'}

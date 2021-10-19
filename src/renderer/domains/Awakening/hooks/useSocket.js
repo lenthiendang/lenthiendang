@@ -19,7 +19,8 @@ const useSocket = () => {
   }, []);
 
   useEffect(() => {
-    socketRef.current.emit('register', { Số_rắn_dăng_ký: 15 });
+    // Số_rắn_dăng_ký
+    socketRef.current.emit('register', { paroli_register_amount: 1 });
   }, [socketRef]);
 };
 

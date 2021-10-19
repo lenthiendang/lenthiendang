@@ -148,6 +148,7 @@ const getBetData = (patternList, betAccountType) => {
 
 export const startBet = () => (dispatch, getState) => {
   const {
+    account: { balance },
     price: { list },
     awakening: { patternList, totalBetAmount },
   } = getState((state) => state);
@@ -155,6 +156,16 @@ export const startBet = () => (dispatch, getState) => {
   let newTotalBetAmount = totalBetAmount;
   const newList = patternList.map((pattern) => startPattern(pattern, list));
   const betData = getBetData(newList, 'DEMO');
+  if (
+    Number(balance) <
+    Number(betData[0].betAmount) + Number(betData[1].betAmount)
+  ) {
+    // eslint-disable-next-line no-alert
+    alert('Số dư không đủ để tiếp tục');
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    dispatch(resetAllPatterns());
+    return;
+  }
   newList.forEach((pattern) => {
     newTotalBetAmount += pattern.isRunning ? pattern.recentBetAmount : 0;
     pattern.recentBetAmount = 0;
@@ -392,23 +403,12 @@ export const runPatterns =
     dispatch(setPatternList(newPatternList));
   };
 
-export const pauseAllAwakenPatterns = () => (dispatch, getState) => {
-  const {
-    awakening: { patternList },
-  } = getState((state) => state);
-
-  const newPatternList = patternList.map((pattern) =>
-    activePattern(pattern, false)
-  );
-  dispatch(setPatternList(newPatternList));
-};
-
 export const runRandomPatterns = (funds) => (dispatch, getState) => {
   const {
     awakening: { patternList },
-    account: { originalBalance },
+    account: { balance },
   } = getState((state) => state);
-  const fundsValue = funds ? Number(funds) : Number(originalBalance);
+  const fundsValue = funds ? Number(funds) : Number(balance);
   const runningPatternIds = getRandomMiniAwakenIds(fundsValue);
   const newPatternList = patternList.map((pattern) => {
     return runningPatternIds.includes(pattern.id)

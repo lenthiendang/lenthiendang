@@ -6,9 +6,9 @@ import {
   startBet,
   updateAutoParoliPatternList,
   updatePatternList,
-} from '../../../redux/slices/awakeningSlice';
-import RandomAwakening from './RandomAwakening';
-import useSocket from '../hooks/useSocket';
+} from '../../redux/slices/awakeningSlice';
+import RandomAwakening from './components/RandomAwakening';
+import useSocket from './hooks/useSocket';
 
 function MainLayout() {
   const dispatch = useDispatch();
