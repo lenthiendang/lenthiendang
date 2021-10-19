@@ -170,7 +170,6 @@ export const startBet = () => async (dispatch, getState) => {
     setBetAmount(Number(betData[0].betAmount) + Number(betData[1].betAmount))
   );
   dispatch(setTotalBetAmount(newTotalBetAmount));
-  console.log(betData);
 
   // send betData to exchange
 
@@ -178,8 +177,7 @@ export const startBet = () => async (dispatch, getState) => {
 
   for (let i = 0; i < betData.length; i++) {
     if (betData[i].betAmount * 1 !== 0) {
-      console.log(api, betData[i]);
-      const res = await api.fetchFromExchangeServer('bet', betData[i]);
+      await api.fetchFromExchangeServer('bet', betData[i]);
       await sleep(500);
     }
   }
