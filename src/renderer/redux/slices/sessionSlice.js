@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { createSlice } from '@reduxjs/toolkit';
 
 const sessionSlice = createSlice({
@@ -17,6 +18,10 @@ const sessionSlice = createSlice({
 });
 
 export const { toggleBetSession, increaseRunningTimer } = sessionSlice.actions;
+
+export const reloadPage = async () => {
+  await axios(`http://localhost:${process.env.LOCAL_PORT}/dashboard/reload`);
+};
 
 // export const getTimestamp = () => (dispatch, getState) => {
 //   const {
