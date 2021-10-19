@@ -22,6 +22,10 @@ import {
   startPattern,
   togglePatternActive,
 } from '../../domains/Awakening/models/awakenPatternUtils';
+import API from '../../class/API';
+import { sleep } from '../../../utils';
+import { getBalance } from './accountSlice';
+import { reloadPage } from './sessionSlice';
 
 const awakeningPatterns = new AwakenPatternList(readLocalAwakenPatterns());
 
@@ -146,15 +150,17 @@ const getBetData = (patternList, betAccountType) => {
   return [upBetting, downBetting];
 };
 
-export const startBet = () => (dispatch, getState) => {
+export const startBet = () => async (dispatch, getState) => {
   const {
+    auth: { accessToken },
+    account: { accountType },
     price: { list },
     awakening: { patternList, totalBetAmount },
   } = getState((state) => state);
 
   let newTotalBetAmount = totalBetAmount;
   const newList = patternList.map((pattern) => startPattern(pattern, list));
-  const betData = getBetData(newList, 'DEMO');
+  const betData = getBetData(newList, accountType);
   newList.forEach((pattern) => {
     newTotalBetAmount += pattern.isRunning ? pattern.recentBetAmount : 0;
     pattern.recentBetAmount = 0;
@@ -165,6 +171,20 @@ export const startBet = () => (dispatch, getState) => {
   );
   dispatch(setTotalBetAmount(newTotalBetAmount));
   console.log(betData);
+
+  // send betData to exchange
+
+  const api = new API({ accessToken });
+
+  for (let i = 0; i < betData.length; i++) {
+    if (betData[i].betAmount * 1 !== 0) {
+      console.log(api, betData[i]);
+      const res = await api.fetchFromExchangeServer('bet', betData[i]);
+      await sleep(500);
+    }
+  }
+  dispatch(getBalance());
+  await reloadPage();
 };
 
 export const checkResult = () => (dispatch, getState) => {
