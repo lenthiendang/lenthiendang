@@ -8,7 +8,6 @@ import { toggleBetSession } from '../redux/slices/sessionSlice';
 const useGetTimestamp = () => {
   const {
     auth: { uid, accessToken },
-    session: { isBetSession },
   } = useSelector((state) => state);
 
   const dispatch = useDispatch();
@@ -31,29 +30,16 @@ const useGetTimestamp = () => {
   }, [accessToken, uid]);
 
   useEffect(() => {
-    if (uid && accessToken) {
-      exchangeSocketRef.current.on('BO_PRICE', (data) => {
-        if (data) {
-          setCounter(data.order);
-          // add a condition to prevent redux dev tool from polluting logs
-          if (data.isBetSession !== isBetSession) {
-            dispatch(toggleBetSession(data.isBetSession));
-          }
-        }
-      });
-    }
+    exchangeSocketRef.current.on('BO_PRICE', (data) => {
+      if (data) {
+        setCounter(data.order);
+        dispatch(toggleBetSession(data.isBetSession));
+      }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [accessToken, uid]);
+  }, []);
 
   return counter;
-};
-
-export const useGetTimestampDump = () => {
-  // const dispatch = useDispatch();
-
-  useInterval(() => {
-    // dispatch(getTimestamp());
-  }, 1000);
 };
 
 export default useGetTimestamp;

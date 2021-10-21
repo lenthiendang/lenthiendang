@@ -9,7 +9,9 @@ const sessionSlice = createSlice({
   },
   reducers: {
     toggleBetSession: (state, action) => {
-      state.isBetSession = action.payload;
+      if (state.isBetSession !== action.payload) {
+        state.isBetSession = action.payload;
+      }
     },
     increaseRunningTimer: (state) => {
       state.runningTimer += 1;
@@ -22,17 +24,5 @@ export const { toggleBetSession, increaseRunningTimer } = sessionSlice.actions;
 export const reloadPage = async () => {
   await axios(`http://localhost:${process.env.LOCAL_PORT}/dashboard/reload`);
 };
-
-// export const getTimestamp = () => (dispatch, getState) => {
-//   const {
-//     session: { isBetSession },
-//   } = getState((state) => state);
-
-//   const ts = new Timestamp();
-//   dispatch(setCounter(ts.counter));
-//   if (ts.isBetSession !== isBetSession) {
-//     dispatch(toggleBetSession(ts.isBetSession));
-//   }
-// };
 
 export default sessionSlice.reducer;
