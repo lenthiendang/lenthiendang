@@ -80,9 +80,8 @@ const awakeningSlice = createSlice({
 });
 
 // Selectors
-export const selectPatternList = (state) => state.awakening.patternList;
-export const selectPattern = (id) => (state) =>
-  state.awakening.patternList.find((pattern) => id === pattern.id);
+export const selectRunning = (state) =>
+  state.awakening.patternList.some((pattern) => pattern.isActive === true);
 
 // Actions
 export const {
@@ -114,6 +113,7 @@ const getBetData = (patternList, betAccountType) => {
     patternList.forEach((pattern) => {
       const {
         type,
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         isRunning,
         isVirtualRun,
         betOrders,
@@ -122,8 +122,7 @@ const getBetData = (patternList, betAccountType) => {
         betRatioPos,
       } = pattern;
       // MiniAwaken is a Martingale other type
-      const isMartingale =
-        type === PATTERN_TYPE.MARTINGALE || type === PATTERN_TYPE.MINI_AWAKEN;
+      const isMartingale = type === PATTERN_TYPE.MINI_AWAKEN;
 
       if (isRunning) {
         // eslint-disable-next-line no-nested-ternary
@@ -195,6 +194,27 @@ export const startBet = () => async (dispatch, getState) => {
   await reloadPage();
 };
 
+function calculateSumProfit(sumProfit, pattern) {
+  switch (pattern.type) {
+    case PATTERN_TYPE.MINI_AWAKEN:
+      sumProfit.miniAwaken += pattern.recentProfit;
+      break;
+    case PATTERN_TYPE.AUTO_PAROLI:
+      sumProfit.autoParoli += pattern.recentProfit;
+      break;
+    default:
+      sumProfit.paroli += pattern.recentProfit;
+  }
+}
+
+function toFixNumberSumProfit(sumProfit) {
+  sumProfit.paroli = getNumberToFix(sumProfit.paroli, 2);
+  sumProfit.autoParoli = getNumberToFix(sumProfit.autoParoli, 2);
+  sumProfit.martingale = getNumberToFix(sumProfit.martingale, 2);
+  sumProfit.miniAwaken = getNumberToFix(sumProfit.miniAwaken, 2);
+  sumProfit.total = getNumberToFix(sumProfit.total, 2);
+}
+
 export const checkResult = () => (dispatch, getState) => {
   const {
     price: { list },
@@ -202,50 +222,43 @@ export const checkResult = () => (dispatch, getState) => {
   } = getState((state) => state);
   let isRunning = false;
 
-  const newList = patternList.map((pattern) =>
-    checkPatternResult(pattern, list)
-  );
   const sumProfitNow = { ...sumProfit };
 
-  newList.forEach((pattern) => {
-    if (pattern.isActive === true) {
+  const newList = patternList.map((pattern) => {
+    if (!isRunning && pattern.isActive) {
       isRunning = true;
     }
-    sumProfitNow.total += pattern.recentProfit;
-    switch (pattern.type) {
-      case PATTERN_TYPE.AUTO_PAROLI:
-        sumProfitNow.autoParoli += pattern.recentProfit;
-        break;
-      case PATTERN_TYPE.MARTINGALE:
-        sumProfitNow.martingale += pattern.recentProfit;
-        break;
-      case PATTERN_TYPE.MINI_AWAKEN:
-        sumProfitNow.miniAwaken += pattern.recentProfit;
-        break;
-      default:
-        sumProfitNow.paroli += pattern.recentProfit;
+    const newPattern = checkPatternResult(pattern, list);
+    sumProfitNow.total += newPattern.recentProfit;
+    if (newPattern.recentProfit !== 0) {
+      calculateSumProfit(sumProfitNow, newPattern);
+      // after set to sumProfit state, reset to 0
+      newPattern.recentProfit = 0;
     }
-    // after set to sumProfit state, reset to 0
-    pattern.recentProfit = 0;
+
+    return newPattern;
   });
 
-  sumProfitNow.paroli = getNumberToFix(sumProfitNow.paroli, 2);
-  sumProfitNow.autoParoli = getNumberToFix(sumProfitNow.autoParoli, 2);
-  sumProfitNow.martingale = getNumberToFix(sumProfitNow.martingale, 2);
-  sumProfitNow.miniAwaken = getNumberToFix(sumProfitNow.miniAwaken, 2);
-  sumProfitNow.total = getNumberToFix(sumProfitNow.total, 2);
+  toFixNumberSumProfit(sumProfitNow);
 
-  dispatch(setPatternList(newList));
-  dispatch(setSumProfit(sumProfitNow));
+  batch(() => {
+    dispatch(setPatternList(newList));
+    dispatch(setSumProfit(sumProfitNow));
+  });
+
   if (isRunning) {
     dispatch(setProfitResult(Number(sumProfitNow.total)));
-  }
-  if (
-    (takeProfitPoint !== 0 && sumProfitNow.total >= takeProfitPoint) ||
-    (stopLossPoint !== 0 && sumProfitNow.total <= stopLossPoint)
-  ) {
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    dispatch(resetAllPatterns());
+    if (
+      (takeProfitPoint !== 0 && sumProfitNow.total >= takeProfitPoint) ||
+      (stopLossPoint !== 0 && sumProfitNow.total <= stopLossPoint)
+    ) {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      dispatch(resetAllPatterns());
+    } else {
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      dispatch(updateAutoParoliPatternList());
+      dispatch(startBet());
+    }
   }
 };
 
@@ -330,19 +343,6 @@ export const updatePattern = (updatedPattern) => (dispatch, getState) => {
   saveLocalPatterns(newList);
 };
 
-export const updateAllMartingaleBetOrders = () => (dispatch, getState) => {
-  const {
-    price: { list },
-    awakening: { patternList },
-  } = getState((state) => state);
-  const newList = patternList.map((pattern) => {
-    return pattern.type === PATTERN_TYPE.PAROLI
-      ? pattern
-      : getPatternUpdateBetOrders({ ...pattern }, list);
-  });
-  dispatch(setPatternList(newList));
-};
-
 const getParoliOftenAppear = (candleList) =>
   candleList.map((candleString) => ({
     condition: candleString.type.charAt(0),
@@ -361,7 +361,7 @@ export const updatePatternList = () => (dispatch, getState) => {
     switch (pattern.type) {
       case PATTERN_TYPE.AUTO_PAROLI:
         return { ...pattern, ...newGoodParoli[pattern.id - 1] };
-      case PATTERN_TYPE.MARTINGALE:
+      case PATTERN_TYPE.MINI_AWAKEN:
         return getPatternUpdateBetOrders({ ...pattern }, list);
       default:
         return pattern;

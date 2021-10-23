@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import {
   Button,
   Flex,
@@ -15,6 +14,7 @@ import {
   Tabs,
   useDisclosure,
 } from '@chakra-ui/react';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   addPattern,

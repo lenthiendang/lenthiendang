@@ -5,19 +5,20 @@ import {
   runRandomPatterns,
   resetAllPatterns,
   setProfitResult,
+  selectRunning,
 } from '../../../redux/slices/awakeningSlice';
 import Audio from '../audio';
 import { VALID_FUNDS } from '../awakeningUtil';
-import AwakeningDialog from './AwakeningDialog';
+import AwakenAnimation from './AwakenAnimation';
 import RandomAwakenSetting from './RandomAwakenSetting';
 
-export default function RandomAwakening() {
+function RandomAwakening() {
   const dispatch = useDispatch();
-  const { patternList, betAmount, totalBetAmount, sumProfit, profitResult } =
-    useSelector((state) => state.awakening);
-  const isRunning = patternList.some((pattern) => pattern.isActive === true);
+  const { betAmount, totalBetAmount, sumProfit, profitResult } = useSelector(
+    (state) => state.awakening
+  );
+  const isRunning = useSelector(selectRunning);
   const balance = useSelector((state) => state.account.balance);
-  // eslint-disable-next-line @typescript-eslint/no-shadow
   const fundsOptions = ['', ...VALID_FUNDS];
   const [funds, setFunds] = useState('');
   const betAmountLabel =
@@ -25,14 +26,14 @@ export default function RandomAwakening() {
 
   const handleRandomAwaken = () => {
     if (isRunning) {
-      batch(() => {
-        dispatch(resetAllPatterns());
-      });
+      dispatch(resetAllPatterns());
     } else {
-      dispatch(setProfitResult(0));
-      dispatch(runRandomPatterns(funds !== '' ? Number(funds) : undefined));
+      batch(() => {
+        dispatch(setProfitResult(0));
+        dispatch(runRandomPatterns(funds !== '' ? Number(funds) : undefined));
+      });
       // eslint-disable-next-line promise/catch-or-return,promise/always-return
-      Audio.awaken.play().then(() => {});
+      Audio.awaken.play();
     }
   };
 
@@ -48,7 +49,7 @@ export default function RandomAwakening() {
       borderRadius="5px"
       px="20px"
     >
-      <AwakeningDialog backgroundColor="transparent" enabled={isRunning} />
+      <AwakenAnimation enabled={isRunning} />
       <Flex
         justifyContent="flex-end"
         alignItems="center"
@@ -64,7 +65,7 @@ export default function RandomAwakening() {
             <Text fontSize="14px">{betAmountLabel}</Text>
           </>
         )}
-        {!isRunning && profitResult !== 0 && (
+        {!selectRunning && profitResult !== 0 && (
           <Text color="yellow" fontWeight="bold" pl="10px" fontSize="14px">
             {`${profitResult > 0 ? 'Thắng ' : 'Thua '} ${profitResult}`}
           </Text>
@@ -97,3 +98,5 @@ export default function RandomAwakening() {
     </Flex>
   );
 }
+
+export default RandomAwakening;

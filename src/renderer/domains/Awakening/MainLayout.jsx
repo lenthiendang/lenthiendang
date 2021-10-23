@@ -2,9 +2,8 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   checkResult,
+  selectRunning,
   setProfitResult,
-  startBet,
-  updateAutoParoliPatternList,
   updatePatternList,
 } from '../../redux/slices/awakeningSlice';
 import RandomAwakening from './components/RandomAwakening';
@@ -13,10 +12,10 @@ import useSocket from './hooks/useSocket';
 function MainLayout() {
   const dispatch = useDispatch();
   const candles = useSelector((state) => state.price.list);
-  const patternList = useSelector((state) => state.awakening.patternList);
-  const isRunning = patternList.some((pattern) => pattern.isActive === true);
+  const isRunning = useSelector(selectRunning);
 
   useSocket();
+
   useEffect(() => {
     dispatch(updatePatternList());
   }, [dispatch]);
@@ -28,12 +27,10 @@ function MainLayout() {
   }, [dispatch, isRunning]);
 
   useEffect(() => {
-    if (candles && candles.length > 0) {
+    if (isRunning) {
       dispatch(checkResult());
-      dispatch(updateAutoParoliPatternList());
-      dispatch(startBet());
     }
-  }, [dispatch, candles]);
+  }, [dispatch, isRunning, candles]);
 
   return (
     <>

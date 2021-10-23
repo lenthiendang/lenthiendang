@@ -73,10 +73,7 @@ const handleParoliBetSuccess = (pattern) => {
   pattern.profit += profit;
   pattern.recentProfit = profit;
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
-    console.log(
-      `Win process paroli `,
-      pattern.betOrders.map((b) => (b.betType ? 'T' : 'G'))
-    );
+    console.log(`Win process paroli `, pattern.betOrders.toString());
     pattern.winCount += 1;
     pattern.isRunning = false;
     pattern.patternPos = 0;
@@ -107,16 +104,17 @@ const handleParoliBetFailed = (pattern) => {
 };
 
 const checkParoliResult = (pattern, candles) => {
-  const lastCandle = candles[candles.length - 1];
-  const newPattern = { ...pattern };
   if (pattern.isRunning) {
+    const newPattern = { ...pattern };
+    const lastCandle = candles[candles.length - 1];
     if (lastCandle.type === getParoliPos(pattern).type) {
       handleParoliBetSuccess(newPattern);
     } else {
       handleParoliBetFailed(newPattern);
     }
+    return newPattern;
   }
-  return newPattern;
+  return pattern;
 };
 
 const updateMartingaleBetOrders = (pattern, candles) => {
@@ -137,33 +135,6 @@ const updateMartingaleBetOrders = (pattern, candles) => {
 export const getPatternUpdateBetOrders = (pattern, candles) => {
   updateMartingaleBetOrders(pattern, candles);
   return pattern;
-};
-
-const handleMartingaleBetFailed = (pattern) => {
-  pattern.virtualProfit -= pattern.betOrders[pattern.patternPos].betAmount;
-  const profit = pattern.isVirtualRun
-    ? 0
-    : pattern.betOrders[pattern.patternPos].betAmount;
-  pattern.profit -= profit;
-  pattern.profitLoop -= profit;
-  pattern.recentProfit = -1 * profit;
-
-  // if lose a martingale pattern
-  if (pattern.betOrders.length - 1 === pattern.patternPos) {
-    pattern.patternPos = 0;
-    pattern.loseCount += 1;
-    if (pattern.isVirtualRun) {
-      pattern.profitLoop = 0;
-    }
-    if (pattern.martingaleWinLoopPos === pattern.martingaleWinLoop.length - 1) {
-      pattern.martingaleWinLoopPos = 0;
-    } else {
-      pattern.martingaleWinLoopPos += pattern.isVirtualRun ? 1 : 0;
-    }
-    pattern.isVirtualRun = false;
-  } else {
-    pattern.patternPos += 1;
-  }
 };
 
 const handleMiniAwakenBetFailed = (pattern) => {
@@ -229,6 +200,7 @@ const handleMiniAwakenBetFailed = (pattern) => {
   }
 };
 
+// mini-awaken
 const handleMartingaleBetSuccess = (pattern, candles) => {
   pattern.virtualProfit +=
     pattern.betOrders[pattern.patternPos].betAmount * 0.95;
@@ -243,13 +215,6 @@ const handleMartingaleBetSuccess = (pattern, candles) => {
   pattern.patternPos = 0;
   pattern.isRunning = false;
 
-  if (pattern.type === PATTERN_TYPE.MARTINGALE) {
-    // if profit >= limit win amount => run virtual
-    pattern.isVirtualRun =
-      pattern.profitLoop >=
-      pattern.martingaleWinLoop[pattern.martingaleWinLoopPos];
-  }
-
   if (!pattern.isVirtualRun && pattern.type === PATTERN_TYPE.MINI_AWAKEN) {
     pattern.miniAwakenWinCount += 1;
   }
@@ -260,37 +225,33 @@ const handleMartingaleBetSuccess = (pattern, candles) => {
 };
 
 const checkMartingaleResult = (pattern, candles) => {
-  const lastCandle = candles[candles.length - 1];
-  const newPattern = { ...pattern };
-  if (newPattern.isRunning) {
+  if (pattern.isRunning) {
+    const newPattern = { ...pattern };
+    const lastCandle = candles[candles.length - 1];
     if (
       lastCandle.type === newPattern.betOrders[newPattern.patternPos].betType
     ) {
       handleMartingaleBetSuccess(newPattern, candles);
-    } else {
-      switch (pattern.type) {
-        case PATTERN_TYPE.MARTINGALE:
-          handleMartingaleBetFailed(newPattern);
-          break;
-        default:
-          handleMiniAwakenBetFailed(newPattern);
-      }
+    } else if (PATTERN_TYPE.MINI_AWAKEN === pattern.type) {
+      handleMiniAwakenBetFailed(newPattern);
     }
+    return newPattern;
   }
-  return newPattern;
+  return pattern;
 };
 
 export const checkPatternResult = (pattern, candles) => {
-  switch (pattern.type) {
-    case PATTERN_TYPE.AUTO_PAROLI:
-      return checkParoliResult(pattern, candles);
-    case PATTERN_TYPE.MARTINGALE:
-      return checkMartingaleResult(pattern, candles);
-    case PATTERN_TYPE.MINI_AWAKEN:
-      return checkMartingaleResult(pattern, candles);
-    default:
-      return checkParoliResult(pattern, candles);
+  if (pattern.isRunning) {
+    switch (pattern.type) {
+      case PATTERN_TYPE.MINI_AWAKEN:
+        return checkMartingaleResult(pattern, candles);
+      case PATTERN_TYPE.AUTO_PAROLI:
+        return checkParoliResult(pattern, candles);
+      default:
+        return checkParoliResult(pattern, candles);
+    }
   }
+  return pattern;
 };
 
 export const togglePatternActive = (pattern) => {
