@@ -23,7 +23,7 @@ export default {
         },
       },
       {
-        test: /playwright\/lib/,
+        test: /PrintDeps\.exe?$/,
         use: {
           loader: 'file-loader',
           options: {
