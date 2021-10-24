@@ -37,11 +37,16 @@ const initSumProfit = {
   total: 0,
 };
 
+const initBetAmount = {
+  up: 0,
+  down: 0,
+};
+
 const initialState = {
   patternList: awakeningPatterns.list,
   maxId: awakeningPatterns.maxId,
   sumProfit: initSumProfit,
-  betAmount: 0,
+  betAmount: initBetAmount,
   totalBetAmount: 0,
   stopLossPoint: 0,
   takeProfitPoint: 0,
@@ -176,7 +181,10 @@ export const startBet = () => async (dispatch, getState) => {
   });
   dispatch(setPatternList(newList));
   dispatch(
-    setBetAmount(Number(betData[0].betAmount) + Number(betData[1].betAmount))
+    setBetAmount({
+      up: Number(betData[0].betAmount),
+      down: Number(betData[1].betAmount),
+    })
   );
   dispatch(setTotalBetAmount(newTotalBetAmount));
 
@@ -284,7 +292,7 @@ export const resetAllPatterns = () => (dispatch, getState) => {
   const newPatternList = patternList.map((pattern) => resetPattern(pattern));
   dispatch(setPatternList(newPatternList));
   dispatch(setSumProfit(initSumProfit));
-  dispatch(setBetAmount(0));
+  dispatch(setBetAmount(initBetAmount));
 };
 
 export const stopPatterns = (type) => (dispatch, getState) => {

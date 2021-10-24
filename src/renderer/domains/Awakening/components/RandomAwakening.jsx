@@ -6,6 +6,7 @@ import {
   resetAllPatterns,
   setProfitResult,
   selectRunning,
+  setTotalBetAmount,
 } from '../../../redux/slices/awakeningSlice';
 import Audio from '../audio';
 import { VALID_FUNDS } from '../awakeningUtil';
@@ -21,8 +22,10 @@ function RandomAwakening() {
   const balance = useSelector((state) => state.account.balance);
   const fundsOptions = ['', ...VALID_FUNDS];
   const [funds, setFunds] = useState('');
-  const betAmountLabel =
-    Number(betAmount) >= 0 ? `T${betAmount}` : `G${-1 * Number(betAmount)}`;
+  const betAmountUp = Number(betAmount.up) !== 0 ? `T${betAmount.up}` : '';
+  const betAmountDown =
+    Number(betAmount.down) !== 0 ? ` G${betAmount.down}` : '';
+  const betAmountLabel = `${betAmountUp}${betAmountDown}`;
 
   const handleRandomAwaken = () => {
     if (isRunning) {
@@ -30,6 +33,7 @@ function RandomAwakening() {
     } else {
       batch(() => {
         dispatch(setProfitResult(0));
+        dispatch(setTotalBetAmount(0));
         dispatch(runRandomPatterns(funds !== '' ? Number(funds) : undefined));
       });
       // eslint-disable-next-line promise/catch-or-return,promise/always-return
@@ -43,6 +47,7 @@ function RandomAwakening() {
       width="900px"
       height="70px"
       flexDirection="row"
+      justifyContent="space-between"
       alignItems="center"
       backgroundColor="#350048"
       border="1px solid #FFF"
@@ -57,7 +62,7 @@ function RandomAwakening() {
         color="#FFF"
         width="500px"
       >
-        {Number(betAmount) !== 0 && (
+        {betAmountLabel.length > 0 && (
           <>
             <Text fontWeight="bold" p="0 5px 0 10px" fontSize="14px">
               Đặt
