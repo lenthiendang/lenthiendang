@@ -199,7 +199,7 @@ export const startBet = () => async (dispatch, getState) => {
     }
   }
   dispatch(getBalance());
-  await reloadPage();
+  dispatch(reloadPage());
 };
 
 function calculateSumProfit(sumProfit, pattern) {
