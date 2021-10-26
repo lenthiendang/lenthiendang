@@ -25,7 +25,7 @@ export const toggleBetSession = (payload) => (dispatch, getState) => {
   } = getState((store) => store);
 
   if (isBetSession !== payload) {
-    setBetSession(payload);
+    dispatch(setBetSession(payload));
   }
 };
 
