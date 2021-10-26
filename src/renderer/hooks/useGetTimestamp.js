@@ -1,44 +1,28 @@
+import { useState, useEffect, useContext } from 'react';
+import { useDispatch } from 'react-redux';
 import { useInterval } from 'react-use';
-import { useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
-import io from 'socket.io-client';
 
 import { toggleBetSession } from '../redux/slices/sessionSlice';
+import { SocketContext } from '../socket';
 
 const useGetTimestamp = () => {
-  const {
-    auth: { uid, accessToken },
-  } = useSelector((state) => state);
-
   const dispatch = useDispatch();
   const [counter, setCounter] = useState(null);
-  const exchangeSocketRef = useRef();
-
-  // init
-  useEffect(() => {
-    if (uid && accessToken) {
-      exchangeSocketRef.current = io(`https://ws.${process.env.DOMAIN}`, {
-        reconnectionDelayMax: 1e4,
-        query: {
-          uid,
-          ssid: accessToken,
-        },
-      });
-
-      exchangeSocketRef.current.emit('BO_PRICE_SUBSCRIBE', null);
-    }
-  }, [accessToken, uid]);
+  const socket = useContext(SocketContext);
 
   useEffect(() => {
-    exchangeSocketRef.current.on('BO_PRICE', (data) => {
-      if (data) {
-        setCounter(data.order);
-        dispatch(toggleBetSession(data.isBetSession));
-      }
+    socket.current.on('BET_SESSION_INFO', (data) => {
+      dispatch(toggleBetSession(data));
+      setCounter(30);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useInterval(() => {
+    if (counter !== null) {
+      setCounter(counter - 1);
+    }
+  }, 1000);
   return counter;
 };
 

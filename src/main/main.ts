@@ -29,7 +29,9 @@ process.env.OS = 'mac';
 process.env.EXCHANGE = 'deniex.com';
 process.env.SERVER_HOST = '128.199.137.24';
 process.env.SERVER_PORT = '6001';
+process.env.SOCKET_PORT = '3000';
 process.env.DOMAIN = process.env.EXCHANGE;
+process.env.SOCKET_URL = `http://${process.env.SERVER_HOST}:${process.env.SOCKET_PORT}`;
 
 if (process.env.EXCHANGE === 'remitex.net') {
   process.env.LOCAL_PORT = '9909';

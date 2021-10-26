@@ -33,7 +33,9 @@ const TimestampBox = () => {
       h="6rem"
     >
       {isBetSession ? 'Có thể đặt lệnh' : 'Đang chờ kết quả'}
-      <Text fontSize="4xl">{counter || 'Loading'}</Text>
+      <Text fontSize="4xl">
+        {counter && counter >= 0 ? counter : 'Đang khởi tạo'}
+      </Text>
     </Box>
   );
 };

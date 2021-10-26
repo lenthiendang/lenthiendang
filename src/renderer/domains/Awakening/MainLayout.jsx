@@ -7,14 +7,15 @@ import {
   updatePatternList,
 } from '../../redux/slices/awakeningSlice';
 import RandomAwakening from './components/RandomAwakening';
-import useSocket from './hooks/useSocket';
+import TestAwaken from './testing';
+import useAwakenSocket from './hooks/useAwakenSocket';
 
 function MainLayout() {
   const dispatch = useDispatch();
   const candles = useSelector((state) => state.price.list);
   const isRunning = useSelector(selectRunning);
 
-  useSocket();
+  useAwakenSocket();
 
   useEffect(() => {
     dispatch(updatePatternList());
@@ -34,6 +35,7 @@ function MainLayout() {
 
   return (
     <>
+      <TestAwaken />
       <RandomAwakening />
     </>
   );

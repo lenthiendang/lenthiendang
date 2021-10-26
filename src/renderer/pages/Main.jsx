@@ -1,17 +1,20 @@
 import React from 'react';
 import { Switch, Route } from 'react-router-dom';
-import { Flex } from '@chakra-ui/react';
+import { Flex, Spinner } from '@chakra-ui/react';
 
 import Background from '../components/Background';
 import Dashboard from './Dashboard';
 // import Agreement from './Agreement';
 import Login from './Login';
 import useCheckLogin from '../hooks/useCheckLogin';
+import { SocketContext, useSocket } from '../socket';
 
 const Main = () => {
   useCheckLogin();
+  const socket = useSocket();
+
   return (
-    <>
+    <SocketContext.Provider value={socket}>
       <Background />
       <Flex>
         <Switch>
@@ -23,11 +26,15 @@ const Main = () => {
             <Login />
           </Route>
           <Route path="/dashboard" exact>
-            <Dashboard />
+            {socket.current ? (
+              <Dashboard />
+            ) : (
+              <Spinner size="xl" color="white" />
+            )}
           </Route>
         </Switch>
       </Flex>
-    </>
+    </SocketContext.Provider>
   );
 };
 
