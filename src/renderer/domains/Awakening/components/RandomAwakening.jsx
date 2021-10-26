@@ -2,10 +2,9 @@ import { Button, Flex, Text } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { batch, useDispatch, useSelector } from 'react-redux';
 import {
-  runRandomPatterns,
   resetAllPatterns,
+  runRandomPatterns,
   setProfitResult,
-  selectRunning,
   setTotalBetAmount,
 } from '../../../redux/slices/awakeningSlice';
 import Audio from '../audio';
@@ -15,11 +14,10 @@ import RandomAwakenSetting from './RandomAwakenSetting';
 
 function RandomAwakening() {
   const dispatch = useDispatch();
-  const { betAmount, totalBetAmount, sumProfit, profitResult } = useSelector(
-    (state) => state.awakening
-  );
-  const isRunning = useSelector(selectRunning);
+  const { betAmount, totalBetAmount, sumProfit, profitResult, patternList } =
+    useSelector((state) => state.awakening);
   const balance = useSelector((state) => state.account.balance);
+  const awakenRunning = patternList.some((pattern) => pattern.isActive);
   const fundsOptions = ['', ...VALID_FUNDS];
   const [funds, setFunds] = useState('');
   const betAmountUp = Number(betAmount.up) !== 0 ? `T${betAmount.up}` : '';
@@ -28,7 +26,7 @@ function RandomAwakening() {
   const betAmountLabel = `${betAmountUp}${betAmountDown}`;
 
   const handleRandomAwaken = () => {
-    if (isRunning) {
+    if (awakenRunning) {
       dispatch(resetAllPatterns());
     } else {
       batch(() => {
@@ -54,7 +52,7 @@ function RandomAwakening() {
       borderRadius="5px"
       px="20px"
     >
-      <AwakenAnimation enabled={isRunning} />
+      <AwakenAnimation enabled={awakenRunning} />
       <Flex
         justifyContent="flex-end"
         alignItems="center"
@@ -70,7 +68,7 @@ function RandomAwakening() {
             <Text fontSize="14px">{betAmountLabel}</Text>
           </>
         )}
-        {!selectRunning && profitResult !== 0 && (
+        {!awakenRunning && profitResult !== 0 && (
           <Text color="yellow" fontWeight="bold" pl="10px" fontSize="14px">
             {`${profitResult > 0 ? 'Thắng ' : 'Thua '} ${profitResult}`}
           </Text>
@@ -91,10 +89,10 @@ function RandomAwakening() {
           disabled={!(balance && balance >= 10)}
           onClick={handleRandomAwaken}
         >
-          {isRunning ? 'Stop' : 'Awaken'}
+          {awakenRunning ? 'Stop' : 'Awaken'}
         </Button>
         <RandomAwakenSetting
-          isRunning={isRunning}
+          isRunning={awakenRunning}
           funds={funds}
           setFunds={setFunds}
           fundsOptions={fundsOptions}
