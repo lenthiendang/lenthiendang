@@ -39,6 +39,7 @@ const defaultValues = {
 const schema = yup.object().shape({
   [FORM_FIELD.STOP_LOSS_POINT]: yup
     .string()
+    .test('min', 'Giá trị tối thiểu là 10', (val) => Number(val) >= 10)
     .test(
       'right-format',
       'Giá trị không hợp lệ',

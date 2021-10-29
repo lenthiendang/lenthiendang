@@ -21,6 +21,7 @@ import {
   resetPattern,
   startPattern,
   togglePatternActive,
+  updateMartingaleBetOrders,
 } from '../../domains/Awakening/models/awakenPatternUtils';
 import API from '../../class/API';
 import { sleep } from '../../../utils';
@@ -84,10 +85,6 @@ const awakeningSlice = createSlice({
   },
 });
 
-// Selectors
-export const selectRunning = (state) =>
-  state.awakening.patternList.some((pattern) => pattern.isActive === true);
-
 // Actions
 export const {
   setPatternList,
@@ -126,10 +123,11 @@ const getBetData = (patternList, betAccountType) => {
         betRatio,
         betRatioPos,
       } = pattern;
-      // MiniAwaken is a Martingale other type
-      const isMartingale = type === PATTERN_TYPE.MINI_AWAKEN;
 
       if (isRunning) {
+        // MiniAwaken is a Martingale other type
+        const isMartingale = type === PATTERN_TYPE.MINI_AWAKEN;
+
         // eslint-disable-next-line no-nested-ternary
         const currentBetAmount = isMartingale
           ? isVirtualRun
@@ -154,17 +152,38 @@ const getBetData = (patternList, betAccountType) => {
   return [upBetting, downBetting];
 };
 
+const STOP_LOSS_LIMIT_RATIO = 1.15;
+
 export const startBet = () => async (dispatch, getState) => {
   const {
     auth: { accessToken },
     account: { accountType, balance },
     price: { list },
-    awakening: { patternList, totalBetAmount },
+    awakening: { patternList, totalBetAmount, sumProfit, stopLossPoint },
   } = getState((state) => state);
 
   let newTotalBetAmount = totalBetAmount;
   const newList = patternList.map((pattern) => startPattern(pattern, list));
-  const betData = getBetData(newList, accountType);
+  const runningPatterns = newList.filter((pattern) => pattern.isRunning);
+
+  // Handle risk: When case "lose money >= stop loss" can happens
+  // Rerun the pattern
+  const cloneRunningPatterns = JSON.parse(JSON.stringify(runningPatterns));
+  const betDataTemp = getBetData(cloneRunningPatterns, accountType);
+  const betValueTemp = Math.abs(
+    Number(betDataTemp[0].betAmount) - Number(betDataTemp[1].betAmount)
+  );
+  if (
+    stopLossPoint !== 0 &&
+    -1 * betValueTemp + sumProfit.total <= STOP_LOSS_LIMIT_RATIO * stopLossPoint
+  ) {
+    runningPatterns.forEach((pattern) =>
+      // eslint-disable-next-line @typescript-eslint/no-use-before-define
+      reRunPattern({ pattern, candleList: list })
+    );
+  }
+
+  const betData = getBetData(runningPatterns, accountType);
   if (
     Number(balance) <
     Number(betData[0].betAmount) + Number(betData[1].betAmount)
@@ -193,7 +212,7 @@ export const startBet = () => async (dispatch, getState) => {
   const api = new API({ accessToken });
 
   for (let i = 0; i < betData.length; i++) {
-    if (betData[i].betAmount * 1 !== 0) {
+    if (Number(betData[i].betAmount) !== 0) {
       await api.fetchFromExchangeServer('bet', betData[i]);
       await sleep(500);
     }
@@ -221,6 +240,16 @@ function toFixNumberSumProfit(sumProfit) {
   sumProfit.martingale = getNumberToFix(sumProfit.martingale, 2);
   sumProfit.miniAwaken = getNumberToFix(sumProfit.miniAwaken, 2);
   sumProfit.total = getNumberToFix(sumProfit.total, 2);
+}
+
+function reRunPattern({ pattern, candleList = [] }) {
+  if (pattern.isRunning) {
+    pattern.patternPos = 0;
+    pattern.isRunning = false;
+    if (PATTERN_TYPE.MINI_AWAKEN === pattern.type) {
+      updateMartingaleBetOrders(pattern, candleList);
+    }
+  }
 }
 
 export const checkResult = () => (dispatch, getState) => {
@@ -254,8 +283,8 @@ export const checkResult = () => (dispatch, getState) => {
     dispatch(setSumProfit(sumProfitNow));
   });
 
+  dispatch(setProfitResult(Number(sumProfitNow.total)));
   if (isRunning) {
-    dispatch(setProfitResult(Number(sumProfitNow.total)));
     if (
       (takeProfitPoint !== 0 && sumProfitNow.total >= takeProfitPoint) ||
       (stopLossPoint !== 0 && sumProfitNow.total <= stopLossPoint)

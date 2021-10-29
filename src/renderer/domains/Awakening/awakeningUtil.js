@@ -241,3 +241,31 @@ export const getRandomMiniAwakenIds = (funds) => {
   // eslint-disable-next-line consistent-return
   return idListResult;
 };
+
+const allPossibleCombinations = (input = ['T', 'G'], length, curStr = '') => {
+  if (curStr.length === length) return [curStr];
+  const ret = [];
+  for (let i = 0; i < input.length; i++) {
+    // eslint-disable-next-line prefer-spread
+    ret.push.apply(
+      ret,
+      allPossibleCombinations(input, length, curStr + input[i])
+    );
+  }
+  return ret;
+};
+
+const AWAKEN_PAROLI_PATTERNS = {};
+
+export const getAwakenParoliPattern = (length, index) => {
+  const key = `LENGTH_${length}`;
+  // eslint-disable-next-line no-prototype-builtins
+  if (!AWAKEN_PAROLI_PATTERNS.hasOwnProperty(key)) {
+    AWAKEN_PAROLI_PATTERNS[key] = allPossibleCombinations(
+      ['T', 'G'],
+      Number(length),
+      ''
+    );
+  }
+  return AWAKEN_PAROLI_PATTERNS[key][index];
+};

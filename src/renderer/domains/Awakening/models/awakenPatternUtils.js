@@ -117,7 +117,7 @@ const checkParoliResult = (pattern, candles) => {
   return pattern;
 };
 
-const updateMartingaleBetOrders = (pattern, candles) => {
+export const updateMartingaleBetOrders = (pattern, candles) => {
   const length = pattern.condition.length + pattern.betOrders.length;
   const lastCandles = getLastCandles(candles, length);
   const newCondition = lastCandles.slice(0, pattern.condition.length).join('');

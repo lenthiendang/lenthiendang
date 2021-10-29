@@ -86,7 +86,7 @@ function RandomAwakening() {
           colorScheme="yellow"
           color="#350048"
           height="30px"
-          disabled={!(balance && balance >= 10)}
+          disabled={!awakenRunning && (balance < 10 || !balance)}
           onClick={handleRandomAwaken}
         >
           {awakenRunning ? 'Stop' : 'Awaken'}
