@@ -1,6 +1,7 @@
 import { Button, Flex, Text } from '@chakra-ui/react';
 import React, { useState } from 'react';
 import { batch, useDispatch, useSelector } from 'react-redux';
+import useGetTimestamp from '../../../hooks/useGetTimestamp';
 import {
   resetAllPatterns,
   runRandomPatterns,
@@ -14,10 +15,15 @@ import RandomAwakenSetting from './RandomAwakenSetting';
 
 function RandomAwakening() {
   const dispatch = useDispatch();
+  const { isBetSession } = useSelector((state) => state.session);
   const { betAmount, totalBetAmount, sumProfit, profitResult, patternList } =
     useSelector((state) => state.awakening);
   const balance = useSelector((state) => state.account.balance);
   const awakenRunning = patternList.some((pattern) => pattern.isActive);
+  const counter = useGetTimestamp();
+  const disableStartButton =
+    !awakenRunning &&
+    (!isBetSession || counter < 5 || balance < 10 || !balance);
   const fundsOptions = ['', ...VALID_FUNDS];
   const [funds, setFunds] = useState('');
   const betAmountUp = Number(betAmount.up) !== 0 ? `T${betAmount.up}` : '';
@@ -86,7 +92,7 @@ function RandomAwakening() {
           colorScheme="yellow"
           color="#350048"
           height="30px"
-          disabled={!awakenRunning && (balance < 10 || !balance)}
+          disabled={disableStartButton}
           onClick={handleRandomAwaken}
         >
           {awakenRunning ? 'Stop' : 'Awaken'}
