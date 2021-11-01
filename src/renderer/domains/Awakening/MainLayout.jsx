@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   checkResult,
-  selectRunning,
   setProfitResult,
   updatePatternList,
 } from '../../redux/slices/awakeningSlice';
@@ -13,7 +12,8 @@ import useAwakenSocket from './hooks/useAwakenSocket';
 function MainLayout() {
   const dispatch = useDispatch();
   const candles = useSelector((state) => state.price.list);
-  const isRunning = useSelector(selectRunning);
+  const patternList = useSelector((state) => state.awakening.patternList);
+  const isRunning = patternList.some((pattern) => pattern.isActive === true);
 
   useAwakenSocket();
 
