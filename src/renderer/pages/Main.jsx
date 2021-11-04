@@ -26,11 +26,7 @@ const Main = () => {
             <Login />
           </Route>
           <Route path="/dashboard" exact>
-            {socket.current ? (
-              <Dashboard />
-            ) : (
-              <Spinner size="xl" color="white" />
-            )}
+            {socket ? <Dashboard /> : <Spinner size="xl" color="white" />}
           </Route>
         </Switch>
       </Flex>

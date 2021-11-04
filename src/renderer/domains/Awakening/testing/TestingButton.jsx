@@ -1,5 +1,5 @@
 import { Button } from '@chakra-ui/button';
-import React, { useEffect, useContext } from 'react';
+import React, { useContext } from 'react';
 import { SocketContext } from '../../../socket';
 
 const PATTERNS_AMOUNT = 1;
@@ -20,15 +20,24 @@ const TestingButton = () => {
   //        2/ Viết lại awaken:
 
   const socket = useContext(SocketContext);
-  const handleClick = () => {
-    console.log('x');
-    socket.current.emit('AWAKEN_REGISTER', PATTERNS_AMOUNT);
+
+  const handleRegister = () => {
+    socket.emit('AWAKEN_REGISTER', PATTERNS_AMOUNT);
+  };
+
+  const handleUnregister = () => {
+    socket.emit('AWAKEN_UNREGISTER');
   };
 
   return (
-    <Button colorScheme="primary" onClick={handleClick}>
-      Test awaken
-    </Button>
+    <>
+      <Button colorScheme="primary" onClick={handleRegister}>
+        Awaken Register
+      </Button>
+      <Button colorScheme="secondary" onClick={handleUnregister}>
+        Awaken Unregister
+      </Button>
+    </>
   );
 };
 

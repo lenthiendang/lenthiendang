@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useInterval } from 'react-use';
 
 import { toggleBetSession } from '../redux/slices/sessionSlice';
@@ -11,12 +11,12 @@ const useGetTimestamp = () => {
   const socket = useContext(SocketContext);
 
   useEffect(() => {
-    socket.current.on('BET_SESSION_INFO', (data) => {
+    socket.on('BET_SESSION_INFO', (data) => {
       dispatch(toggleBetSession(data));
       setCounter(30);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [socket]);
 
   useInterval(() => {
     if (counter !== null) {
