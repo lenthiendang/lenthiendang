@@ -60,8 +60,6 @@ function RandomAwakening() {
       }
       dispatch(resetAllPatterns());
     } else {
-      // eslint-disable-next-line promise/catch-or-return
-      Audio.awaken.play().then(() => true);
       batch(() => {
         dispatch(setProfitResult(0));
         dispatch(setTotalBetAmount(0));
@@ -71,6 +69,10 @@ function RandomAwakening() {
           dispatch(runRandomPatterns(funds !== '' ? Number(funds) : undefined));
         }
       });
+      Audio.awaken
+        .play()
+        .then(() => true)
+        .catch((error) => console.log(error));
     }
   };
 
