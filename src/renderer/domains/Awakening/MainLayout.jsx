@@ -29,7 +29,10 @@ function MainLayout() {
 
   useEffect(() => {
     if (isRunning) {
-      dispatch(checkResult());
+      const timeoutId = setTimeout(() => {
+        dispatch(checkResult());
+        clearTimeout(timeoutId);
+      }, 2000);
     }
   }, [dispatch, isRunning, candles]);
 
@@ -41,4 +44,4 @@ function MainLayout() {
   );
 }
 
-export default React.memo(MainLayout);
+export default MainLayout;

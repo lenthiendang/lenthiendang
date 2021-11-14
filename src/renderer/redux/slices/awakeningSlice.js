@@ -11,6 +11,7 @@ import {
   getNumberToFix,
   getRandomMiniAwakenIds,
   PATTERN_TYPE,
+  PLAY_MODE,
 } from '../../domains/Awakening/awakeningUtil';
 import AwakenPatternList from '../../domains/Awakening/models/AwakenPatternList';
 import {
@@ -33,8 +34,8 @@ const awakeningPatterns = new AwakenPatternList(readLocalAwakenPatterns());
 const initSumProfit = {
   paroli: 0,
   autoParoli: 0,
+  commonParoli: 0,
   miniAwaken: 0,
-  martingale: 0,
   total: 0,
 };
 
@@ -49,9 +50,12 @@ const initialState = {
   sumProfit: initSumProfit,
   betAmount: initBetAmount,
   totalBetAmount: 0,
+  profitResult: 0,
   stopLossPoint: 0,
   takeProfitPoint: 0,
-  profitResult: 0,
+  playMode: PLAY_MODE.PERSONAL,
+  funds: '',
+  commonParoliRunning: false,
 };
 
 const awakeningSlice = createSlice({
@@ -73,14 +77,23 @@ const awakeningSlice = createSlice({
     setBetAmount: (state, action) => {
       state.betAmount = action.payload;
     },
+    setTotalBetAmount: (state, action) => {
+      state.totalBetAmount = action.payload;
+    },
     setStopLossPoint: (state, action) => {
       state.stopLossPoint = action.payload;
     },
     setTakeProfitPoint: (state, action) => {
       state.takeProfitPoint = action.payload;
     },
-    setTotalBetAmount: (state, action) => {
-      state.totalBetAmount = action.payload;
+    setPlayMode: (state, action) => {
+      state.playMode = action.payload;
+    },
+    setFunds: (state, action) => {
+      state.funds = action.payload;
+    },
+    setCommonParoliRunning: (state, action) => {
+      state.commonParoliRunning = action.payload;
     },
   },
 });
@@ -95,7 +108,26 @@ export const {
   setTotalBetAmount,
   setStopLossPoint,
   setTakeProfitPoint,
+  setCommonParoliRunning,
+  setFunds,
+  setPlayMode,
 } = awakeningSlice.actions;
+
+export const resetAllPatterns = () => (dispatch, getState) => {
+  const {
+    awakening: { patternList = [] },
+  } = getState((state) => state);
+  const newPatternList = patternList
+    .filter((pattern) => PATTERN_TYPE.COMMON_PAROLI !== pattern.type)
+    .map((pattern) => resetPattern(pattern));
+  dispatch(setCommonParoliRunning(false));
+  dispatch(setPatternList(newPatternList));
+  dispatch(setSumProfit(initSumProfit));
+  dispatch(setBetAmount(initBetAmount));
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  saveLocalPatterns(newPatternList);
+};
 
 const getBetData = (patternList, betAccountType) => {
   const [upBetting, downBetting] = [
@@ -159,12 +191,20 @@ export const startBet = () => async (dispatch, getState) => {
     auth: { accessToken },
     account: { accountType, balance },
     price: { list },
-    awakening: { patternList, totalBetAmount, sumProfit, stopLossPoint },
+    awakening: {
+      patternList,
+      totalBetAmount,
+      sumProfit,
+      stopLossPoint,
+      playMode,
+    },
   } = getState((state) => state);
 
   let newTotalBetAmount = totalBetAmount;
   const newList = patternList.map((pattern) => startPattern(pattern, list));
-  const runningPatterns = newList.filter((pattern) => pattern.isRunning);
+  const runningPatterns = newList.filter(
+    (pattern) => pattern.isRunning && pattern.patternPos >= 0
+  );
 
   // Handle risk: When case "lose money >= stop loss" can happens
   // Rerun the pattern
@@ -177,6 +217,12 @@ export const startBet = () => async (dispatch, getState) => {
     stopLossPoint !== 0 &&
     -1 * betValueTemp + sumProfit.total <= STOP_LOSS_LIMIT_RATIO * stopLossPoint
   ) {
+    if (playMode === PLAY_MODE.COMMON) {
+      // eslint-disable-next-line no-alert
+      alert('Số dư không đủ để tiếp tục');
+      dispatch(resetAllPatterns());
+      return;
+    }
     runningPatterns.forEach((pattern) =>
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       reRunPattern({ pattern, candleList: list })
@@ -186,11 +232,10 @@ export const startBet = () => async (dispatch, getState) => {
   const betData = getBetData(runningPatterns, accountType);
   if (
     Number(balance) <
-    Number(betData[0].betAmount) + Number(betData[1].betAmount)
+    Math.abs(Number(betData[0].betAmount) - Number(betData[1].betAmount)) - 1
   ) {
     // eslint-disable-next-line no-alert
     alert('Số dư không đủ để tiếp tục');
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     dispatch(resetAllPatterns());
     return;
   }
@@ -226,18 +271,24 @@ function calculateSumProfit(sumProfit, pattern) {
     case PATTERN_TYPE.MINI_AWAKEN:
       sumProfit.miniAwaken += pattern.recentProfit;
       break;
+    case PATTERN_TYPE.PAROLI:
+      sumProfit.paroli += pattern.recentProfit;
+      break;
     case PATTERN_TYPE.AUTO_PAROLI:
       sumProfit.autoParoli += pattern.recentProfit;
       break;
+    case PATTERN_TYPE.COMMON_PAROLI:
+      sumProfit.commonParoli += pattern.recentProfit;
+      break;
     default:
-      sumProfit.paroli += pattern.recentProfit;
+      throw new Error(`calculateSumProfit type ${pattern.type} is invalid`);
   }
 }
 
 function toFixNumberSumProfit(sumProfit) {
   sumProfit.paroli = getNumberToFix(sumProfit.paroli, 2);
   sumProfit.autoParoli = getNumberToFix(sumProfit.autoParoli, 2);
-  sumProfit.martingale = getNumberToFix(sumProfit.martingale, 2);
+  sumProfit.commonParoli = getNumberToFix(sumProfit.commonParoli, 2);
   sumProfit.miniAwaken = getNumberToFix(sumProfit.miniAwaken, 2);
   sumProfit.total = getNumberToFix(sumProfit.total, 2);
 }
@@ -260,8 +311,7 @@ export const checkResult = () => (dispatch, getState) => {
   let isRunning = false;
 
   const sumProfitNow = { ...sumProfit };
-
-  const newList = patternList.map((pattern) => {
+  let newList = patternList.map((pattern) => {
     if (!isRunning && pattern.isActive) {
       isRunning = true;
     }
@@ -275,8 +325,14 @@ export const checkResult = () => (dispatch, getState) => {
 
     return newPattern;
   });
-
   toFixNumberSumProfit(sumProfitNow);
+  newList = newList.filter(
+    (pattern) =>
+      pattern.type !== PATTERN_TYPE.COMMON_PAROLI ||
+      (pattern.type === PATTERN_TYPE.COMMON_PAROLI &&
+        pattern.winCount === 0 &&
+        pattern.loseCount === 0)
+  );
 
   batch(() => {
     dispatch(setPatternList(newList));
@@ -297,6 +353,9 @@ export const checkResult = () => (dispatch, getState) => {
       dispatch(startBet());
     }
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+  saveLocalPatterns(newList);
 };
 
 export const toggleActive =
@@ -313,16 +372,6 @@ export const toggleActive =
     });
     dispatch(setPatternList(newPatternList));
   };
-
-export const resetAllPatterns = () => (dispatch, getState) => {
-  const {
-    awakening: { patternList = [] },
-  } = getState((state) => state);
-  const newPatternList = patternList.map((pattern) => resetPattern(pattern));
-  dispatch(setPatternList(newPatternList));
-  dispatch(setSumProfit(initSumProfit));
-  dispatch(setBetAmount(initBetAmount));
-};
 
 export const stopPatterns = (type) => (dispatch, getState) => {
   if (!type) return;
@@ -348,9 +397,20 @@ export const addPattern = (pattern) => (dispatch, getState) => {
   const {
     awakening: { patternList, maxId },
   } = getState((state) => state);
+  const uidNumbers = patternList
+    .filter((_pattern) => _pattern.type === pattern.type)
+    .map((_pattern) => Number(_pattern.uid.split('-')[1]));
 
+  if (uidNumbers.length === 0) {
+    uidNumbers.push(0);
+  }
+  const newUid = `${pattern.type}-${Math.max(...uidNumbers) + 1}`;
   const newList = patternList.slice(0);
-  newList.push({ ...pattern, id: maxId + 1 });
+  newList.push({
+    ...pattern,
+    id: maxId + 1,
+    uid: newUid,
+  });
   batch(() => {
     dispatch(setMaxId(maxId + 1));
     dispatch(setPatternList(newList));
@@ -358,11 +418,54 @@ export const addPattern = (pattern) => (dispatch, getState) => {
   saveLocalPatterns(newList);
 };
 
+export const addPatternList =
+  (patternAddList, patternType) => (dispatch, getState) => {
+    const {
+      awakening: { patternList, maxId },
+    } = getState((state) => state);
+
+    const uidNumbers = patternList
+      .filter((_pattern) => _pattern.type === patternType)
+      .map((_pattern) => Number(_pattern.uid.split('-')[1]));
+
+    if (uidNumbers.length === 0) {
+      uidNumbers.push(0);
+    }
+    let maxIdNumber = maxId;
+    let maxUidNumber = Math.max(...uidNumbers);
+
+    const newList = patternList.slice(0);
+    patternAddList.forEach((pattern) => {
+      maxIdNumber++;
+      maxUidNumber++;
+      newList.push({
+        ...pattern,
+        id: maxIdNumber,
+        uid: `${pattern.type}-${maxUidNumber}`,
+      });
+    });
+    batch(() => {
+      dispatch(setMaxId(maxIdNumber));
+      dispatch(setPatternList(newList));
+    });
+    saveLocalPatterns(newList);
+  };
+
 export const deletePattern = (id) => (dispatch, getState) => {
   const {
     awakening: { patternList },
   } = getState((state) => state);
   const newList = patternList.filter((pattern) => pattern.id !== id);
+  dispatch(setPatternList(newList));
+  saveLocalPatterns(newList);
+};
+
+export const deleteCommonParoliPattern = (roomId) => (dispatch, getState) => {
+  if (!roomId) return;
+  const {
+    awakening: { patternList },
+  } = getState((state) => state);
+  const newList = patternList.filter((pattern) => pattern.roomId !== roomId);
   dispatch(setPatternList(newList));
   saveLocalPatterns(newList);
 };
@@ -470,6 +573,39 @@ export const runRandomPatterns = (funds) => (dispatch, getState) => {
       : pattern;
   });
   dispatch(setPatternList(newPatternList));
+};
+
+export const runCommonParoliPatterns = (roomId) => (dispatch, getState) => {
+  const {
+    awakening: { patternList },
+  } = getState((state) => state);
+  const isRoomStarted = patternList.some(
+    (pattern) =>
+      PATTERN_TYPE.COMMON_PAROLI === pattern.type &&
+      roomId === pattern.roomId &&
+      pattern.isRunning
+  );
+  if (isRoomStarted) {
+    return;
+  }
+  let startAble = false;
+  const newPatternList = patternList.map((pattern) => {
+    const isStart =
+      PATTERN_TYPE.COMMON_PAROLI === pattern.type &&
+      roomId === pattern.roomId &&
+      !pattern.isActive;
+    if (!startAble && isStart) {
+      startAble = true;
+    }
+    return {
+      ...pattern,
+      isActive: isStart || pattern.isActive,
+      isRunning: isStart || pattern.isRunning,
+    };
+  });
+  if (startAble) {
+    dispatch(setPatternList(newPatternList));
+  }
 };
 
 // Reducer

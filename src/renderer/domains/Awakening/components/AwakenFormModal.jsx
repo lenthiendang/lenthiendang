@@ -21,10 +21,8 @@ import {
   updatePattern,
 } from '../../../redux/slices/awakeningSlice';
 import {
-  betOrderSingleRegExp,
-  convertBetConditionInputToString,
-  convertBetOrderStringToObject,
   getNumberToFix,
+  mapToNewParoliPattern,
   PATTERN_FIELD,
   PATTERN_TYPE,
 } from '../awakeningUtil';
@@ -53,27 +51,6 @@ function AwakenFormModal(props) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     isAddMode ? initPattern : mapParoliPatternToInputObject(patternInput)
   );
-
-  // eslint-disable-next-line @typescript-eslint/no-shadow
-  const mapToNewParoliPattern = (pattern) => {
-    const condition = convertBetConditionInputToString(pattern.condition);
-    const betLoop = pattern.betLoop.split('-').map((loop) => Number(loop));
-    const betRatios = pattern.betRatios
-      .split('-')
-      .map((ratio) => Number(ratio));
-    const betOrders = pattern.betOrders
-      .match(betOrderSingleRegExp)
-      .map((betOder) => convertBetOrderStringToObject(betOder));
-
-    return {
-      condition,
-      betOrders,
-      betLoop,
-      betRatios,
-      type: pattern.type,
-      isActive: false,
-    };
-  };
 
   // use this function to Martingale & MiniAwaken( MiniMartingale)
   // eslint-disable-next-line @typescript-eslint/no-shadow

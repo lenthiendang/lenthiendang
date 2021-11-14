@@ -15,7 +15,7 @@ import {
   useDisclosure,
 } from '@chakra-ui/react';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
@@ -23,17 +23,18 @@ import Box from '../../../components/Box';
 import {
   setStopLossPoint,
   setTakeProfitPoint,
+  setFunds,
+  setPlayMode,
 } from '../../../redux/slices/awakeningSlice';
+import { PLAY_MODE, VALID_FUNDS } from '../awakeningUtil';
 import InputField from './FormFields/InputField';
+import RadioField from './FormFields/RadioField';
 
 export const FORM_FIELD = {
   STOP_LOSS_POINT: 'stopLossPoint',
   TAKE_PROFIT_POINT: 'takeProfitPoint',
-};
-
-const defaultValues = {
-  [FORM_FIELD.STOP_LOSS_POINT]: '',
-  [FORM_FIELD.TAKE_PROFIT_POINT]: '',
+  PLAY_MODE: 'playMode',
+  PAROLI_COMMON_FUNDS: 'paroliCommonFunds',
 };
 
 const schema = yup.object().shape({
@@ -52,28 +53,59 @@ const schema = yup.object().shape({
       'Giá trị không hợp lệ',
       (val) => val === '' || !Number.isNaN(Number(val))
     ),
+
+  [FORM_FIELD.PAROLI_COMMON_FUNDS]: yup.string().when(FORM_FIELD.PLAY_MODE, {
+    is: PLAY_MODE.COMMON,
+    then: yup
+      .string()
+      .required('Vui lòng nhập giá trị')
+      .test(
+        'right-format',
+        'Giá trị phải là số nguyên lớn hơn 0',
+        (val) =>
+          val === '' || (Number.isInteger(Number(val)) && Number(val) > 0)
+      ),
+    otherwise: yup.string(),
+  }),
 });
 
-export default function RandomAwakenSetting({
-  isRunning,
-  funds,
-  setFunds,
-  fundsOptions,
-}) {
+function RandomAwakenSetting({ isRunning }) {
   const dispatch = useDispatch();
   const awakenDisclosure = useDisclosure();
-  const { stopLossPoint, takeProfitPoint } = useSelector(
+  const fundsOptions = useMemo(() => ['', ...VALID_FUNDS], []);
+  const [personalFunds, setPersonalFunds] = useState('');
+  const [formPlayMode, setFormPlayMode] = useState(PLAY_MODE.PERSONAL);
+  const { playMode, funds, stopLossPoint, takeProfitPoint } = useSelector(
     (state) => state.awakening
   );
+  const { balance } = useSelector((state) => state.account);
   const { isOpen, onOpen, onClose } = awakenDisclosure;
+
+  const defaultValues = {
+    [FORM_FIELD.STOP_LOSS_POINT]: '',
+    [FORM_FIELD.TAKE_PROFIT_POINT]: '',
+  };
+
   const { control, handleSubmit, setValue } = useForm({
     defaultValues,
     resolver: yupResolver(schema),
   });
 
+  useEffect(() => {
+    if (playMode === PLAY_MODE.PERSONAL) {
+      setPersonalFunds(funds);
+    } else {
+      setValue(FORM_FIELD.PAROLI_COMMON_FUNDS, funds);
+    }
+    setValue(FORM_FIELD.PLAY_MODE, playMode);
+    setValue(FORM_FIELD.TAKE_PROFIT_POINT, takeProfitPoint || '');
+    setValue(
+      FORM_FIELD.STOP_LOSS_POINT,
+      stopLossPoint ? -1 * stopLossPoint : ''
+    );
+  }, [playMode, funds, setValue, stopLossPoint, takeProfitPoint]);
+
   const handleCloseModal = () => {
-    setValue(FORM_FIELD.STOP_LOSS_POINT, '');
-    setValue(FORM_FIELD.TAKE_PROFIT_POINT, '');
     onClose();
   };
 
@@ -91,8 +123,15 @@ export default function RandomAwakenSetting({
         ? 0
         : values[FORM_FIELD.TAKE_PROFIT_POINT];
 
+    const newFunds =
+      values[FORM_FIELD.PLAY_MODE] === PLAY_MODE.PERSONAL
+        ? personalFunds
+        : values[FORM_FIELD.PAROLI_COMMON_FUNDS];
+
     dispatch(setStopLossPoint(Number(stopLoss)));
     dispatch(setTakeProfitPoint(Number(takeProfit)));
+    dispatch(setFunds(Number(newFunds)));
+    dispatch(setPlayMode(values[FORM_FIELD.PLAY_MODE]));
     handleCloseModal();
   };
 
@@ -113,14 +152,13 @@ export default function RandomAwakenSetting({
     </>
   );
 
-  const renderFundsInput = () => (
+  const personalFundsOptions = (
     <FormControl mt="10px">
       <FormHelperText>3. Vốn</FormHelperText>
       <Select
         backgroundColor="transparent"
-        value={funds}
-        disabled={isRunning}
-        onChange={(e) => setFunds(e.target.value)}
+        value={personalFunds}
+        onChange={(e) => setPersonalFunds(e.target.value)}
       >
         {fundsOptions.reverse().map((fundsValue) => (
           <option key={fundsValue} value={fundsValue}>
@@ -131,12 +169,35 @@ export default function RandomAwakenSetting({
     </FormControl>
   );
 
+  const commonFundsInput = (
+    <FormControl mt="10px">
+      <InputField
+        name={FORM_FIELD.PAROLI_COMMON_FUNDS}
+        control={control}
+        max={Math.floor(balance)}
+        label="3. Vốn"
+      />
+    </FormControl>
+  );
+
+  const playModeOptions = [
+    { value: PLAY_MODE.PERSONAL, label: 'Chơi riêng' },
+    { value: PLAY_MODE.COMMON, label: 'Chơi chung' },
+  ];
+
   const renderSettingForm = () => (
     <Box className="add-pattern-form" boxShadow="0" px="0">
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <Text fontWeight="bold">Sửa</Text>
         {renderInputs()}
-        {renderFundsInput()}
+        <RadioField
+          name={FORM_FIELD.PLAY_MODE}
+          control={control}
+          items={playModeOptions}
+          onValueChange={setFormPlayMode}
+        />
+        {formPlayMode === PLAY_MODE.PERSONAL && personalFundsOptions}
+        {formPlayMode === PLAY_MODE.COMMON && commonFundsInput}
         <Flex flexDir="column" align="center" pt="4">
           <Button type="submit" w="40%" variant="solid" colorScheme="teal">
             Lưu
@@ -181,3 +242,5 @@ export default function RandomAwakenSetting({
     </>
   );
 }
+
+export default React.memo(RandomAwakenSetting);

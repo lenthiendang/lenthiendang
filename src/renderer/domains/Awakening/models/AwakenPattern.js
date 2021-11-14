@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/no-cycle
 import { PATTERN_TYPE } from '../awakeningUtil';
 
 const initBetRatio = (ratios, betLoop) => {
@@ -19,6 +20,8 @@ class AwakenPattern {
   constructor(pattern) {
     this.id = pattern.id;
     this.type = pattern.type || PATTERN_TYPE.PAROLI;
+    this.uid = pattern.uid;
+    this.roomId = pattern.roomId;
     this.isActive = pattern.isActive || false;
     this.condition = pattern.condition;
     this.betOrders = pattern.betOrders;
@@ -29,11 +32,12 @@ class AwakenPattern {
     this.miniAwakenLoseList = pattern.miniAwakenLoseList || [1];
     this.miniAwakenLosePos = pattern.miniAwakenLosePos || 0;
     this.betRatioInit = pattern.betRatios || [1];
+    this.commonParoliFailed = false;
     this.betRatio = initBetRatio(this.betRatioInit, this.betLoop);
     this.miniAwakenWinCount = 0;
     this.miniAwakenLoseCount = 0;
     this.betRatioPos = 0;
-    this.patternPos = 0;
+    this.patternPos = pattern.patternPos || 0;
     this.profit = 0;
     this.recentProfit = 0;
     this.recentBetAmount = 0;
@@ -52,6 +56,8 @@ class AwakenPattern {
     return {
       id: this.id,
       type: this.type,
+      uid: this.uid,
+      roomId: this.roomId,
       isActive: this.isActive,
       condition: this.condition,
       betOrders: this.betOrders,
@@ -79,6 +85,7 @@ class AwakenPattern {
       miniAwakenLoseCount: this.miniAwakenLoseCount,
       isVirtualRun: this.isVirtualRun,
       betOrderUpdatedCount: this.betOrderUpdatedCount,
+      commonParoliFailed: this.commonParoliFailed,
     };
   }
 }

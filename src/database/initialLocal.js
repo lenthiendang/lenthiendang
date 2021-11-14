@@ -4,6 +4,7 @@ export default {
   awakenPatterns: [
     {
       id: 1,
+      uid: 'AUTO_PAROLI-1',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -18,6 +19,7 @@ export default {
     },
     {
       id: 2,
+      uid: 'AUTO_PAROLI-2',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -32,6 +34,7 @@ export default {
     },
     {
       id: 3,
+      uid: 'AUTO_PAROLI-3',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -46,6 +49,7 @@ export default {
     },
     {
       id: 4,
+      uid: 'AUTO_PAROLI-4',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -60,6 +64,7 @@ export default {
     },
     {
       id: 5,
+      uid: 'AUTO_PAROLI-5',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -74,6 +79,7 @@ export default {
     },
     {
       id: 6,
+      uid: 'AUTO_PAROLI-6',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -88,6 +94,7 @@ export default {
     },
     {
       id: 7,
+      uid: 'AUTO_PAROLI-7',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -102,6 +109,7 @@ export default {
     },
     {
       id: 8,
+      uid: 'AUTO_PAROLI-8',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -116,6 +124,7 @@ export default {
     },
     {
       id: 9,
+      uid: 'AUTO_PAROLI-9',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -130,6 +139,7 @@ export default {
     },
     {
       id: 10,
+      uid: 'AUTO_PAROLI-10',
       type: PATTERN_TYPE.AUTO_PAROLI,
       condition: 'T',
       betLoop: [10],
@@ -144,6 +154,7 @@ export default {
     },
     {
       id: 11,
+      uid: 'MINI_AWAKEN-1',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -168,6 +179,7 @@ export default {
     },
     {
       id: 12,
+      uid: 'MINI_AWAKEN-2',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -192,6 +204,7 @@ export default {
     },
     {
       id: 13,
+      uid: 'MINI_AWAKEN-3',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -216,6 +229,7 @@ export default {
     },
     {
       id: 14,
+      uid: 'MINI_AWAKEN-4',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -240,6 +254,7 @@ export default {
     },
     {
       id: 15,
+      uid: 'MINI_AWAKEN-5',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -264,6 +279,7 @@ export default {
     },
     {
       id: 16,
+      uid: 'MINI_AWAKEN-6',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -288,6 +304,7 @@ export default {
     },
     {
       id: 17,
+      uid: 'MINI_AWAKEN-7',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -312,6 +329,7 @@ export default {
     },
     {
       id: 18,
+      uid: 'MINI_AWAKEN-8',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -336,6 +354,7 @@ export default {
     },
     {
       id: 19,
+      uid: 'MINI_AWAKEN-9',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -360,6 +379,7 @@ export default {
     },
     {
       id: 20,
+      uid: 'MINI_AWAKEN-10',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -385,6 +405,7 @@ export default {
     },
     {
       id: 21,
+      uid: 'MINI_AWAKEN-11',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -410,6 +431,7 @@ export default {
     },
     {
       id: 22,
+      uid: 'MINI_AWAKEN-12',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',
@@ -435,6 +457,7 @@ export default {
     },
     {
       id: 23,
+      uid: 'MINI_AWAKEN-13',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'T',
@@ -460,6 +483,7 @@ export default {
     },
     {
       id: 24,
+      uid: 'MINI_AWAKEN-14',
       type: 'MINI_AWAKEN',
       isActive: false,
       condition: 'G',

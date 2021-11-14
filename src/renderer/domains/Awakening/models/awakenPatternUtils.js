@@ -24,6 +24,7 @@ const patterInitRealtimeProps = {
   realWinCount: 0,
   loseCount: 0,
   betOrderUpdatedCount: 0,
+  commonParoliFailed: false,
 };
 
 const autoParoliPatternResetValues = {
@@ -47,13 +48,17 @@ const getLastCandlesString = (candles, length) =>
   getLastCandles(candles, length).join('');
 
 export const startPattern = (pattern, candles) => {
-  let { isRunning } = pattern;
+  let isRunning = false;
   if (
     pattern.isActive &&
     !pattern.isRunning &&
     pattern.condition ===
       getLastCandlesString(candles, pattern.condition.length)
   ) {
+    isRunning = true;
+  }
+
+  if (PATTERN_TYPE.COMMON_PAROLI === pattern.type && pattern.isActive) {
     isRunning = true;
   }
   return { ...pattern, isRunning };
@@ -73,7 +78,7 @@ const handleParoliBetSuccess = (pattern) => {
   pattern.profit += profit;
   pattern.recentProfit = profit;
   if (pattern.betOrders.length - 1 === pattern.patternPos) {
-    console.log(`Win process paroli `, pattern.betOrders.toString());
+    console.log('Win process paroli ', pattern.betOrders);
     pattern.winCount += 1;
     pattern.isRunning = false;
     pattern.patternPos = 0;
@@ -91,6 +96,7 @@ const restartParoliProcess = (pattern) => {
 
 const handleParoliBetFailed = (pattern) => {
   const profit = getParoliPos(pattern).amount;
+  const isCommonParoli = PATTERN_TYPE.COMMON_PAROLI === pattern.type;
   pattern.profit -= profit;
   pattern.recentProfit = -1 * profit;
   pattern.loseCount += 1;
@@ -98,14 +104,27 @@ const handleParoliBetFailed = (pattern) => {
     restartParoliProcess(pattern);
   } else {
     pattern.isRunning = false;
-    pattern.patternPos = 0;
-    pattern.betRatioPos += 1;
+    if (!isCommonParoli) {
+      pattern.patternPos = 0;
+      pattern.betRatioPos += 1;
+    } else {
+      pattern.commonParoliFailed = true;
+      pattern.isActive = false;
+    }
   }
 };
 
 const checkParoliResult = (pattern, candles) => {
   if (pattern.isRunning) {
     const newPattern = { ...pattern };
+    if (
+      PATTERN_TYPE.COMMON_PAROLI === newPattern.type &&
+      newPattern.patternPos === -1
+    ) {
+      newPattern.patternPos = 0;
+      return newPattern;
+    }
+
     const lastCandle = candles[candles.length - 1];
     if (lastCandle.type === getParoliPos(pattern).type) {
       handleParoliBetSuccess(newPattern);
@@ -247,8 +266,12 @@ export const checkPatternResult = (pattern, candles) => {
         return checkMartingaleResult(pattern, candles);
       case PATTERN_TYPE.AUTO_PAROLI:
         return checkParoliResult(pattern, candles);
-      default:
+      case PATTERN_TYPE.COMMON_PAROLI:
         return checkParoliResult(pattern, candles);
+      case PATTERN_TYPE.PAROLI:
+        return checkParoliResult(pattern, candles);
+      default:
+        throw new Error(`pattern.type is invalid: ${pattern.type}`);
     }
   }
   return pattern;

@@ -1,26 +1,33 @@
 import React from 'react';
 import { useController } from 'react-hook-form';
-import { FormControl, FormErrorMessage, FormHelperText, Radio, RadioGroup, Stack } from '@chakra-ui/react';
+import {
+  FormControl,
+  FormErrorMessage,
+  FormHelperText,
+  Radio,
+  RadioGroup,
+  Stack,
+} from '@chakra-ui/react';
 
-export default function RadioField(props) {
-  const {
-    name,
-    control,
-    label = '',
-    direction = 'row',
-    items = [],
-    onValueChange
-  } = props;
-
+export default function RadioField({
+  name,
+  control,
+  label = '',
+  direction = 'row',
+  items = [],
+  onValueChange,
+}) {
   const {
     field: { value, onChange, ref },
-    fieldState: { invalid, error: { type, types, message } = {} }
+    fieldState: { invalid, error: { message } = {} },
   } = useController({ name, control });
 
   const handleOnchange = (e) => {
     onChange(e);
-    onValueChange(e.target.value);
-  }
+    if (onValueChange) {
+      onValueChange(e.target.value);
+    }
+  };
 
   return (
     <FormControl mt="10px" isInvalid={invalid}>
@@ -28,7 +35,11 @@ export default function RadioField(props) {
       <RadioGroup ref={ref} value={value}>
         <Stack direction={direction}>
           {items.map((item) => (
-            <Radio key={item.value} onChange={handleOnchange} value={item.value}>
+            <Radio
+              key={item.value}
+              onChange={handleOnchange}
+              value={item.value}
+            >
               {item.label}
             </Radio>
           ))}

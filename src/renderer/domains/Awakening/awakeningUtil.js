@@ -1,10 +1,13 @@
 import { descend, prop, sort } from 'ramda';
+// eslint-disable-next-line import/no-cycle
+import AwakenPattern from './models/AwakenPattern';
 
 export const PATTERN_TYPE = {
   ALL: 'ALL',
   PAROLI: 'PAROLI',
   MARTINGALE: 'MARTINGALE',
   AUTO_PAROLI: 'AUTO_PAROLI',
+  COMMON_PAROLI: 'COMMON_PAROLI',
   MINI_AWAKEN: 'MINI_AWAKEN', // is type work like Martingale
 };
 
@@ -22,18 +25,30 @@ export const PATTERN_FIELD = {
 };
 
 export const PATTERN_REALTIME_PROPS = [
+  'commonParoliFailed',
+  'miniAwakenWinCount',
+  'miniAwakenLoseCount',
   'betRatio',
   'betRatioPos',
   'patternPos',
   'profit',
+  'recentProfit',
+  'recentBetAmount',
   'betAmount',
   'isRunning',
   'winCount',
+  'realWinCount',
   'loseCount',
   'profitLoop',
+  'virtualProfit',
   'isVirtualRun',
   'betOrderUpdatedCount',
 ];
+
+export const PLAY_MODE = {
+  PERSONAL: 'PERSONAL',
+  COMMON: 'COMMON',
+};
 
 export const betOrderRegExp = /^([TG]\d+\.?\d*)+$/;
 
@@ -172,7 +187,9 @@ export const getCandlesAppear = (list, length, isDuplicated) => {
   };
 };
 
-const paroliDefaultAmounts = [1, 1.95, 3.8, 7.41, 14.46, 28, 54.98, 107.2];
+const paroliDefaultAmounts = [
+  1, 1.95, 3.8, 7.41, 14.46, 28, 54.6, 106.4, 207, 403,
+];
 
 export const getDefaultParoliBetOrder = (betTypeString) => {
   if (!betTypeString) return [];
@@ -268,4 +285,42 @@ export const getAwakenParoliPattern = (length, index) => {
     );
   }
   return AWAKEN_PAROLI_PATTERNS[key][index];
+};
+
+export const mapToNewParoliPattern = (pattern) => {
+  const condition = convertBetConditionInputToString(pattern.condition);
+  const betLoop = pattern.betLoop.split('-').map((loop) => Number(loop));
+  const betRatios = pattern.betRatios.split('-').map((ratio) => Number(ratio));
+  const betOrders = pattern.betOrders
+    .match(betOrderSingleRegExp)
+    .map((betOder) => convertBetOrderStringToObject(betOder));
+
+  return {
+    condition,
+    betOrders,
+    betLoop,
+    betRatios,
+    type: pattern.type,
+    patternPos: pattern.patternPos || 0,
+    isActive: false,
+  };
+};
+
+export const getCommonParoliPattern = ({ length, index, roomId }) => {
+  const betOrders = getAwakenParoliPattern(length, index)
+    .split('')
+    .map((betType, idx) => `${betType}${paroliDefaultAmounts[idx]}`)
+    .join('');
+  const pattern = {
+    betOrders,
+    betLoop: '2',
+    betRatios: '1',
+    condition: '1T',
+    miniAwakenLoseList: '',
+    type: PATTERN_TYPE.COMMON_PAROLI,
+    patternPos: -1,
+  };
+  const newPattern = mapToNewParoliPattern(pattern);
+  newPattern.roomId = roomId;
+  return new AwakenPattern(newPattern).getObject();
 };

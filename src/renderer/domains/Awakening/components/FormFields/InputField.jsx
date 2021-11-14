@@ -15,6 +15,7 @@ export default function InputField({
   isUpperCase,
   type = 'text',
   defaultValue = '',
+  max,
 }) {
   const {
     field: { value, onChange, onBlur, ref },
@@ -27,6 +28,9 @@ export default function InputField({
     const cloneEvent = { ...event };
     if (isUpperCase) {
       cloneEvent.target.value = cloneEvent.target.value.toUpperCase();
+    }
+    if (max && cloneEvent.target.value > max) {
+      cloneEvent.target.value = max;
     }
     onChange(cloneEvent);
   };
