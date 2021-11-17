@@ -54,7 +54,8 @@ const initialState = {
   stopLossPoint: 0,
   takeProfitPoint: 0,
   playMode: PLAY_MODE.PERSONAL,
-  funds: '',
+  funds: '', // personal mode
+  commonParoliFunds: 1, // common mode
   commonParoliRunning: false,
 };
 
@@ -92,6 +93,9 @@ const awakeningSlice = createSlice({
     setFunds: (state, action) => {
       state.funds = action.payload;
     },
+    setCommonParoliFunds: (state, action) => {
+      state.commonParoliFunds = action.payload;
+    },
     setCommonParoliRunning: (state, action) => {
       state.commonParoliRunning = action.payload;
     },
@@ -110,6 +114,7 @@ export const {
   setTakeProfitPoint,
   setCommonParoliRunning,
   setFunds,
+  setCommonParoliFunds,
   setPlayMode,
 } = awakeningSlice.actions;
 
@@ -219,7 +224,7 @@ export const startBet = () => async (dispatch, getState) => {
   ) {
     if (playMode === PLAY_MODE.COMMON) {
       // eslint-disable-next-line no-alert
-      alert('Số dư không đủ để tiếp tục');
+      alert('Ngưng chạy vì có khả năng thua vượt quá cắt lỗ');
       dispatch(resetAllPatterns());
       return;
     }

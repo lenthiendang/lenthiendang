@@ -17,7 +17,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useDispatch, useSelector } from 'react-redux';
+import { batch, useDispatch, useSelector } from 'react-redux';
 import * as yup from 'yup';
 import Box from '../../../components/Box';
 import {
@@ -25,6 +25,7 @@ import {
   setTakeProfitPoint,
   setFunds,
   setPlayMode,
+  setCommonParoliFunds,
 } from '../../../redux/slices/awakeningSlice';
 import { PLAY_MODE, VALID_FUNDS } from '../awakeningUtil';
 import InputField from './FormFields/InputField';
@@ -75,9 +76,8 @@ function RandomAwakenSetting({ isRunning }) {
   const fundsOptions = useMemo(() => ['', ...VALID_FUNDS], []);
   const [personalFunds, setPersonalFunds] = useState('');
   const [formPlayMode, setFormPlayMode] = useState(PLAY_MODE.PERSONAL);
-  const { playMode, funds, stopLossPoint, takeProfitPoint } = useSelector(
-    (state) => state.awakening
-  );
+  const { playMode, funds, commonParoliFunds, stopLossPoint, takeProfitPoint } =
+    useSelector((state) => state.awakening);
   const { balance } = useSelector((state) => state.account);
   const { isOpen, onOpen, onClose } = awakenDisclosure;
 
@@ -92,46 +92,42 @@ function RandomAwakenSetting({ isRunning }) {
   });
 
   useEffect(() => {
-    if (playMode === PLAY_MODE.PERSONAL) {
-      setPersonalFunds(funds);
-    } else {
-      setValue(FORM_FIELD.PAROLI_COMMON_FUNDS, funds);
-    }
+    setPersonalFunds(funds);
+    setValue(FORM_FIELD.PAROLI_COMMON_FUNDS, commonParoliFunds);
     setValue(FORM_FIELD.PLAY_MODE, playMode);
     setValue(FORM_FIELD.TAKE_PROFIT_POINT, takeProfitPoint || '');
     setValue(
       FORM_FIELD.STOP_LOSS_POINT,
       stopLossPoint ? -1 * stopLossPoint : ''
     );
-  }, [playMode, funds, setValue, stopLossPoint, takeProfitPoint]);
+  }, [
+    commonParoliFunds,
+    funds,
+    playMode,
+    setValue,
+    stopLossPoint,
+    takeProfitPoint,
+  ]);
 
   const handleCloseModal = () => {
     onClose();
   };
 
   const handleFormSubmit = (values) => {
-    let stopLoss =
-      values[FORM_FIELD.STOP_LOSS_POINT] === ''
-        ? 0
-        : values[FORM_FIELD.STOP_LOSS_POINT];
-    if (Number(stopLoss) > 0) {
-      stopLoss = -1 * Number(stopLoss);
-    }
+    const stopLoss = Number(values[FORM_FIELD.STOP_LOSS_POINT]);
+    const takeProfit = Number(values[FORM_FIELD.TAKE_PROFIT_POINT]);
+    const newCommonFunds = values[FORM_FIELD.PAROLI_COMMON_FUNDS];
 
-    const takeProfit =
-      values[FORM_FIELD.TAKE_PROFIT_POINT] === ''
-        ? 0
-        : values[FORM_FIELD.TAKE_PROFIT_POINT];
-
-    const newFunds =
-      values[FORM_FIELD.PLAY_MODE] === PLAY_MODE.PERSONAL
-        ? personalFunds
-        : values[FORM_FIELD.PAROLI_COMMON_FUNDS];
-
-    dispatch(setStopLossPoint(Number(stopLoss)));
-    dispatch(setTakeProfitPoint(Number(takeProfit)));
-    dispatch(setFunds(Number(newFunds)));
-    dispatch(setPlayMode(values[FORM_FIELD.PLAY_MODE]));
+    batch(() => {
+      dispatch(setStopLossPoint(-1 * stopLoss));
+      dispatch(setTakeProfitPoint(takeProfit));
+      dispatch(setPlayMode(values[FORM_FIELD.PLAY_MODE]));
+      if (values[FORM_FIELD.PLAY_MODE] === PLAY_MODE.COMMON) {
+        dispatch(setCommonParoliFunds(Number(newCommonFunds)));
+      } else {
+        dispatch(setFunds(Number(personalFunds)));
+      }
+    });
     handleCloseModal();
   };
 

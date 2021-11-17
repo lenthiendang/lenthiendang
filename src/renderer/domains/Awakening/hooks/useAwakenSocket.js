@@ -14,7 +14,7 @@ import { getCommonParoliPattern, PATTERN_TYPE } from '../awakeningUtil';
 const useSocket = () => {
   const dispatch = useDispatch();
   const socket = useContext(SocketContext);
-  const { funds, patternList, commonParoliRunning } = useSelector(
+  const { commonParoliFunds, patternList, commonParoliRunning } = useSelector(
     (state) => state.awakening
   );
   const hasCommonParoli = patternList.some(
@@ -22,9 +22,9 @@ const useSocket = () => {
   );
 
   const runCommonParoli = useCallback(() => {
-    const patternAmount = Math.floor(funds);
+    const patternAmount = Math.floor(commonParoliFunds);
     socket.emit('AWAKEN_REGISTER', patternAmount);
-  }, [funds, socket]);
+  }, [commonParoliFunds, socket]);
 
   useEffect(() => {
     if (commonParoliRunning && !hasCommonParoli) {

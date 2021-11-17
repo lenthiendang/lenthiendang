@@ -20,6 +20,7 @@ function RandomAwakening() {
   const {
     commonParoliRunning,
     funds,
+    commonParoliFunds,
     betAmount,
     totalBetAmount,
     sumProfit,
@@ -32,8 +33,11 @@ function RandomAwakening() {
     commonParoliRunning || patternList.some((pattern) => pattern.isActive);
   const counter = useGetTimestamp();
   const disableStartButton =
-    (playMode === PLAY_MODE.COMMON && balance < funds) ||
     (!awakenRunning &&
+      playMode === PLAY_MODE.COMMON &&
+      balance < commonParoliFunds) ||
+    (!awakenRunning &&
+      playMode === PLAY_MODE.PERSONAL &&
       (!isBetSession || counter < 5 || balance < 10 || !balance));
   // const fundsOptions = useMemo(() => ['', ...VALID_FUNDS], []);
   // const [funds, setFunds] = useState('');
@@ -49,9 +53,9 @@ function RandomAwakening() {
   }, [socket]);
 
   const runCommonParoli = useCallback(() => {
-    const patternAmount = Math.floor(funds);
+    const patternAmount = Math.floor(commonParoliFunds);
     socket.emit('AWAKEN_REGISTER', patternAmount);
-  }, [funds, socket]);
+  }, [commonParoliFunds, socket]);
 
   const handleStartAwaken = () => {
     if (awakenRunning) {
