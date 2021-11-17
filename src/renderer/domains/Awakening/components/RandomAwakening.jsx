@@ -132,7 +132,7 @@ function RandomAwakening() {
         >
           {awakenRunning ? 'Stop' : 'Awaken'}
         </Button>
-        <RandomAwakenSetting isRunning={awakenRunning} />
+        <RandomAwakenSetting isRunning={awakenRunning} showSelectMode={false} />
       </Flex>
     </Flex>
   );

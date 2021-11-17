@@ -53,7 +53,7 @@ const initialState = {
   profitResult: 0,
   stopLossPoint: 0,
   takeProfitPoint: 0,
-  playMode: PLAY_MODE.PERSONAL,
+  playMode: PLAY_MODE.COMMON,
   funds: '', // personal mode
   commonParoliFunds: 1, // common mode
   commonParoliRunning: false,

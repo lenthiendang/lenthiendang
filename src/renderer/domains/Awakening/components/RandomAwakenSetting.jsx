@@ -38,7 +38,7 @@ export const FORM_FIELD = {
   PAROLI_COMMON_FUNDS: 'paroliCommonFunds',
 };
 
-const schema = yup.object().shape({
+const schemaPersonalValidation = {
   [FORM_FIELD.STOP_LOSS_POINT]: yup
     .string()
     .test('min', 'Giá trị tối thiểu là 10', (val) => Number(val) >= 10)
@@ -54,7 +54,10 @@ const schema = yup.object().shape({
       'Giá trị không hợp lệ',
       (val) => val === '' || !Number.isNaN(Number(val))
     ),
+};
 
+const schemaCommonValidation = {
+  ...schemaPersonalValidation,
   [FORM_FIELD.PAROLI_COMMON_FUNDS]: yup.string().when(FORM_FIELD.PLAY_MODE, {
     is: PLAY_MODE.COMMON,
     then: yup
@@ -68,9 +71,18 @@ const schema = yup.object().shape({
       ),
     otherwise: yup.string(),
   }),
-});
+};
 
-function RandomAwakenSetting({ isRunning }) {
+const getSchema = (playMode) =>
+  yup
+    .object()
+    .shape(
+      playMode === PLAY_MODE.COMMON
+        ? schemaCommonValidation
+        : schemaPersonalValidation
+    );
+
+function RandomAwakenSetting({ isRunning, showSelectMode = true }) {
   const dispatch = useDispatch();
   const awakenDisclosure = useDisclosure();
   const fundsOptions = useMemo(() => ['', ...VALID_FUNDS], []);
@@ -88,12 +100,13 @@ function RandomAwakenSetting({ isRunning }) {
 
   const { control, handleSubmit, setValue } = useForm({
     defaultValues,
-    resolver: yupResolver(schema),
+    resolver: yupResolver(getSchema(playMode)),
   });
 
   useEffect(() => {
     setPersonalFunds(funds);
     setValue(FORM_FIELD.PAROLI_COMMON_FUNDS, commonParoliFunds);
+    setFormPlayMode(playMode);
     setValue(FORM_FIELD.PLAY_MODE, playMode);
     setValue(FORM_FIELD.TAKE_PROFIT_POINT, takeProfitPoint || '');
     setValue(
@@ -121,11 +134,13 @@ function RandomAwakenSetting({ isRunning }) {
     batch(() => {
       dispatch(setStopLossPoint(-1 * stopLoss));
       dispatch(setTakeProfitPoint(takeProfit));
-      dispatch(setPlayMode(values[FORM_FIELD.PLAY_MODE]));
-      if (values[FORM_FIELD.PLAY_MODE] === PLAY_MODE.COMMON) {
-        dispatch(setCommonParoliFunds(Number(newCommonFunds)));
-      } else {
-        dispatch(setFunds(Number(personalFunds)));
+      if (showSelectMode) {
+        dispatch(setPlayMode(values[FORM_FIELD.PLAY_MODE]));
+        if (values[FORM_FIELD.PLAY_MODE] === PLAY_MODE.COMMON) {
+          dispatch(setCommonParoliFunds(Number(newCommonFunds)));
+        } else {
+          dispatch(setFunds(Number(personalFunds)));
+        }
       }
     });
     handleCloseModal();
@@ -186,14 +201,20 @@ function RandomAwakenSetting({ isRunning }) {
       <form onSubmit={handleSubmit(handleFormSubmit)}>
         <Text fontWeight="bold">Sửa</Text>
         {renderInputs()}
-        <RadioField
-          name={FORM_FIELD.PLAY_MODE}
-          control={control}
-          items={playModeOptions}
-          onValueChange={setFormPlayMode}
-        />
-        {formPlayMode === PLAY_MODE.PERSONAL && personalFundsOptions}
-        {formPlayMode === PLAY_MODE.COMMON && commonFundsInput}
+        {showSelectMode && (
+          <RadioField
+            name={FORM_FIELD.PLAY_MODE}
+            control={control}
+            items={playModeOptions}
+            onValueChange={setFormPlayMode}
+          />
+        )}
+        {showSelectMode &&
+          formPlayMode === PLAY_MODE.PERSONAL &&
+          personalFundsOptions}
+        {showSelectMode &&
+          formPlayMode === PLAY_MODE.COMMON &&
+          commonFundsInput}
         <Flex flexDir="column" align="center" pt="4">
           <Button type="submit" w="40%" variant="solid" colorScheme="teal">
             Lưu
@@ -239,4 +260,4 @@ function RandomAwakenSetting({ isRunning }) {
   );
 }
 
-export default React.memo(RandomAwakenSetting);
+export default RandomAwakenSetting;
