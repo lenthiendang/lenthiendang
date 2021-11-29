@@ -6,6 +6,7 @@ import useAfterSession from '../hooks/useAfterSession';
 import Timestamp from '../domains/Timestamp';
 import Awakening from '../domains/Awakening';
 import Candle from '../domains/Candle';
+import UserInfo from 'renderer/domains/UserInfo';
 // import { SocketContext, useSocket } from '../socket';
 
 const Dashboard = () => {
@@ -17,6 +18,7 @@ const Dashboard = () => {
   return (
     <Flex h="100vh" w="100vw" overflow="hidden" p="1">
       <Flex m="auto" alignItems="center" justifyItems="center" flexDir="column">
+        <UserInfo />
         <Timestamp />
         <Candle />
         <Awakening />

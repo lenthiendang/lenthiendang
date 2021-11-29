@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateCandles } from '../redux/slices/priceSlice';
+import { getBalance } from '../redux/slices/accountSlice';
 
 const useUpdateCandle = () => {
   const dispatch = useDispatch();
@@ -10,6 +11,7 @@ const useUpdateCandle = () => {
   useEffect(() => {
     if (isBetSession) {
       dispatch(updateCandles());
+      dispatch(getBalance());
     }
   }, [dispatch, isBetSession]);
 };

@@ -31,9 +31,9 @@
     ]
   },
   "build": {
-    "productName": "AILenThienDang",
-    "appId": "org.erb.AILenThienDang",
-    "asar": false,
+    "productName": "AILenThienDangTesting",
+    "appId": "org.erb.AILenThienDangTesting",
+    "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
       "dist",
@@ -202,17 +202,16 @@
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.6",
     "enzyme-to-json": "^3.6.2",
-    "eslint": "^7.25.0",
-    "eslint-config-airbnb": "^18.2.0",
-    "eslint-config-airbnb-typescript": "^12.3.1",
+    "eslint-config-airbnb": "^19.0.1",
+    "eslint-config-airbnb-typescript": "^16.0.0",
     "eslint-config-erb": "^3.0.0",
-    "eslint-config-prettier": "8.3.0",
+    "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-webpack": "^0.13.0",
     "eslint-plugin-compat": "^3.9.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^24.3.6",
     "eslint-plugin-jsx-a11y": "6.4.1",
-    "eslint-plugin-prettier": "^3.4.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-react": "^7.23.2",
     "eslint-plugin-react-hooks": "^4.0.8",
@@ -225,7 +224,7 @@
     "mini-css-extract-plugin": "^1.6.0",
     "nodemon": "^2.0.14",
     "opencollective-postinstall": "^2.0.3",
-    "prettier": "^2.2.1",
+    "prettier": "^2.5.0",
     "react-refresh": "^0.10.0",
     "react-test-renderer": "^17.0.2",
     "rimraf": "^3.0.0",
@@ -237,7 +236,7 @@
     "url-loader": "^4.1.0",
     "webpack": "^5.36.2",
     "webpack-bundle-analyzer": "^4.4.1",
-    "webpack-cli": "^4.6.0",
+    "webpack-cli": "^4.9.1",
     "webpack-dev-server": "^3.11.2",
     "webpack-merge": "^5.7.3",
     "yarn-deduplicate": "^3.1.0"
@@ -255,10 +254,9 @@
     "electron-debug": "^3.2.0",
     "electron-log": "^4.3.5",
     "electron-updater": "^4.3.8",
+    "eslint": "^8.3.0",
     "framer-motion": "^4.1.17",
-    "history": "4.x.x",
     "jsonwebtoken": "^8.5.1",
-    "lodash": "^4.17.21",
     "lowdb": "^2.1.0",
     "path-browserify": "^1.0.1",
     "playwright": "1.8.0",
@@ -271,10 +269,8 @@
     "react-redux": "^7.2.4",
     "react-router-dom": "^5.2.0",
     "react-use": "^17.2.4",
-    "regenerator-runtime": "^0.13.5",
     "socket.io-client": "^4.3.2",
     "styled-components": "^5.3.0",
-    "uuid": "^8.3.2",
     "webpack-node-externals": "^3.0.0",
     "yup": "^0.32.9"
   },
@@ -298,13 +294,14 @@
         "options": {
           "parser": "json"
         }
+      },
+      {
+        "files": "*.ts",
+        "options": {
+          "parser": "babel-ts"
+        }
       }
     ],
     "singleQuote": true
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
   }
 }

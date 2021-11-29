@@ -38,7 +38,7 @@ function MainLayout() {
 
   return (
     <>
-      <TestAwaken />
+      {/* <TestAwaken /> */}
       <RandomAwakening />
     </>
   );

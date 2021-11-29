@@ -8,6 +8,7 @@
  * When running `yarn build` or `yarn build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+//
 import 'core-js/stable';
 import 'regenerator-runtime/runtime';
 import path from 'path';
@@ -27,6 +28,7 @@ if (!fs.existsSync(dir)) {
 
 process.env.OS = 'mac';
 process.env.EXCHANGE = 'deniex.com';
+// process.env.SERVER_HOST = 'localhost';
 process.env.SERVER_HOST = '128.199.137.24';
 process.env.SERVER_PORT = '6001';
 process.env.SOCKET_PORT = '3000';
