@@ -1,10 +1,12 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
   checkResult,
+  deleteCommonParoliPattern,
   setProfitResult,
   updatePatternList,
 } from '../../redux/slices/awakeningSlice';
+import { SocketContext } from '../../socket';
 import RandomAwakening from './components/RandomAwakening';
 import TestAwaken from './testing';
 import useAwakenSocket from './hooks/useAwakenSocket';
@@ -14,10 +16,17 @@ function MainLayout() {
   const candles = useSelector((state) => state.price.list);
   const patternList = useSelector((state) => state.awakening.patternList);
   const isRunning = patternList.some((pattern) => pattern.isActive === true);
+  const socket = useContext(SocketContext);
 
   useAwakenSocket();
 
   useEffect(() => {
+    dispatch(deleteCommonParoliPattern('ALL'));
+  }, [dispatch]);
+
+  useEffect(() => {
+    console.log('updatePatternList');
+    socket.emit('AWAKEN_UNREGISTER');
     dispatch(updatePatternList());
   }, [dispatch]);
 
@@ -28,13 +37,11 @@ function MainLayout() {
   }, [dispatch, isRunning]);
 
   useEffect(() => {
-    if (isRunning) {
-      const timeoutId = setTimeout(() => {
-        dispatch(checkResult());
-        clearTimeout(timeoutId);
-      }, 2000);
-    }
-  }, [dispatch, isRunning, candles]);
+    const timeoutId = setTimeout(() => {
+      dispatch(checkResult());
+      clearTimeout(timeoutId);
+    }, 2000);
+  }, [dispatch, candles]);
 
   return (
     <>

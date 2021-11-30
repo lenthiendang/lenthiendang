@@ -12,6 +12,7 @@ import { SocketContext } from '../../../socket';
 import Audio from '../audio';
 import { PLAY_MODE } from '../awakeningUtil';
 import AwakenAnimation from './AwakenAnimation';
+import ParoliRoomList from './ParoliRoomList';
 import RandomAwakenSetting from './RandomAwakenSetting';
 
 function RandomAwakening() {
@@ -76,7 +77,7 @@ function RandomAwakening() {
       Audio.awaken
         .play()
         .then(() => true)
-        .catch((error) => console.log(error));
+        .catch((error) => console.log('Audio.awaken error:', error));
     }
   };
 
@@ -122,6 +123,7 @@ function RandomAwakening() {
         <Text color="yellow" pl="10px" fontSize="14px">
           Tổng đặt: {Number(totalBetAmount).toFixed(2)}
         </Text>
+        <ParoliRoomList />
         <Button
           mx="10px"
           colorScheme="yellow"

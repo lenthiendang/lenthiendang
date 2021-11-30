@@ -104,6 +104,7 @@ const Awakening = () => {
 
   const renderMainTable = (type = PATTERN_TYPE.PAROLI) => {
     const isParoli = type === PATTERN_TYPE.PAROLI;
+    const isCommonParoli = type === PATTERN_TYPE.COMMON_PAROLI;
     const isAutoParoli = type === PATTERN_TYPE.AUTO_PAROLI;
     const isMartingale = type === PATTERN_TYPE.MARTINGALE;
     const isMiniAwaken = type === PATTERN_TYPE.MINI_AWAKEN;
@@ -142,14 +143,14 @@ const Awakening = () => {
           <Thead>
             <Tr>
               {tableHeaderTd('ID')}
-              {tableHeaderTd('Thế nến')}
+              {tableHeaderTd(isCommonParoli ? 'roomId' : 'Thế nến')}
               {tableHeaderTd('Lệnh đặt')}
               {tableHeaderTd('Tổng cược')}
               {(isMartingale || isMiniAwaken) && tableHeaderTd('Lãi ảo')}
               {tableHeaderTd('Lãi')}
               {tableHeaderTd('Thắng/Thua')}
               {tableHeaderTd('Bước')}
-              {(isParoli || isAutoParoli) && (
+              {(isParoli || isAutoParoli || isCommonParoli) && (
                 <>
                   {tableHeaderTd('Gấp rắn Awaken')}
                   {tableHeaderTd('Hệ số')}
@@ -179,6 +180,7 @@ const Awakening = () => {
               .map((pattern) => {
                 const {
                   id,
+                  roomId,
                   betLoop,
                   betOrders,
                   betRatio,
@@ -201,7 +203,9 @@ const Awakening = () => {
                 return (
                   <Tr key={`pattern-${id}`}>
                     {tableRowTd(id)}
-                    {tableRowTd(getConditionGroupType(condition))}
+                    {tableRowTd(
+                      isCommonParoli ? roomId : getConditionGroupType(condition)
+                    )}
                     {/* eslint-disable-next-line @typescript-eslint/no-use-before-define */}
                     {tableRowTd(renderBetOrderElement(pattern))}
                     {tableRowTd(betAmount)}
@@ -210,11 +214,13 @@ const Awakening = () => {
                     {tableRowTd(Number(profit).toFixed(2))}
                     {tableRowTd(
                       `${
-                        isParoli || isAutoParoli ? winCount : realWinCount
+                        isParoli || isAutoParoli || isCommonParoli
+                          ? winCount
+                          : realWinCount
                       }/${loseCount}`
                     )}
                     {tableRowTd(betOrders.length)}
-                    {(isParoli || isAutoParoli) && (
+                    {(isParoli || isAutoParoli || isCommonParoli) && (
                       <>
                         {tableRowTd(!betLoop ? '' : betLoop.join('-'))}
                         {tableRowTd(betRatio[betRatioPos])}
@@ -262,11 +268,13 @@ const Awakening = () => {
         <Tab>AUTO SĂN RẮN</Tab>
         <Tab>MINI AWAKEN</Tab>
         <Tab>SĂN RẮN</Tab>
+        <Tab>SĂN RẮN CHUNG</Tab>
       </TabList>
       <TabPanels p="0">
         <TabPanel>{renderMainTable(PATTERN_TYPE.AUTO_PAROLI)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.MINI_AWAKEN)}</TabPanel>
         <TabPanel>{renderMainTable(PATTERN_TYPE.PAROLI)}</TabPanel>
+        <TabPanel>{renderMainTable(PATTERN_TYPE.COMMON_PAROLI)}</TabPanel>
       </TabPanels>
     </Tabs>
   );
@@ -334,7 +342,7 @@ const Awakening = () => {
             Lãi Mini Awaken: {Number(sumProfit.miniAwaken).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
-            Lãi Săn rắn: {Number(sumProfit.paroli).toFixed(2)}
+            Lãi Săn rắn chung: {Number(sumProfit.commonParoli).toFixed(2)}
           </Text>
           <Text color="yellow" px="5">
             Tổng lãi: {Number(sumProfit.total).toFixed(2)}

@@ -2,6 +2,7 @@
 import { useEffect, useContext, useCallback } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import {
+  addCommonParoliRoom,
   addPatternList,
   runCommonParoliPatterns,
   setCommonParoliRunning,
@@ -53,7 +54,7 @@ const useSocket = () => {
     // Response của server khi client đăng ký rắn
     socket.on('AWAKEN_REGISTER_RESPONSE', (data) => {
       console.log('AWAKEN_REGISTER_RESPONSE', data);
-      const responseData = data.data;
+      const responseData = data.data || [];
       if (data && responseData.length > 0) {
         const commonParoliList = getCommonParoliList(responseData);
         dispatch(addPatternList(commonParoliList, PATTERN_TYPE.COMMON_PAROLI));
@@ -64,6 +65,7 @@ const useSocket = () => {
     // #Testing: Thông tin rắn mỗi phiên
     socket.on('AWAKEN_INFO', (room) => {
       console.log('AWAKEN_INFO', room);
+      dispatch(addCommonParoliRoom(room));
       if (room.isRunning) {
         dispatch(runCommonParoliPatterns(room.roomId));
       }
