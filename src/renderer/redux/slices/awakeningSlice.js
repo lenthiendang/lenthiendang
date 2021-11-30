@@ -57,6 +57,7 @@ const initialState = {
   funds: '', // personal mode
   commonParoliFunds: 1, // common mode
   commonParoliRunning: false,
+  roomList: [],
 };
 
 const awakeningSlice = createSlice({
@@ -99,6 +100,9 @@ const awakeningSlice = createSlice({
     setCommonParoliRunning: (state, action) => {
       state.commonParoliRunning = action.payload;
     },
+    setRoomList: (state, action) => {
+      state.roomList = action.payload;
+    },
   },
 });
 
@@ -116,6 +120,7 @@ export const {
   setFunds,
   setCommonParoliFunds,
   setPlayMode,
+  setRoomList,
 } = awakeningSlice.actions;
 
 export const resetAllPatterns = () => (dispatch, getState) => {
@@ -126,6 +131,7 @@ export const resetAllPatterns = () => (dispatch, getState) => {
     .filter((pattern) => PATTERN_TYPE.COMMON_PAROLI !== pattern.type)
     .map((pattern) => resetPattern(pattern));
   dispatch(setCommonParoliRunning(false));
+  dispatch(setRoomList([]));
   dispatch(setPatternList(newPatternList));
   dispatch(setSumProfit(initSumProfit));
   dispatch(setBetAmount(initBetAmount));
@@ -311,11 +317,23 @@ function reRunPattern({ pattern, candleList = [] }) {
 export const checkResult = () => (dispatch, getState) => {
   const {
     price: { list },
-    awakening: { patternList, sumProfit, stopLossPoint, takeProfitPoint },
+    awakening: {
+      patternList,
+      sumProfit,
+      stopLossPoint,
+      takeProfitPoint,
+      roomList,
+    },
   } = getState((state) => state);
   let isRunning = false;
 
+  const awakRunning = patternList.some((pattern) => pattern.isActive === true);
+  if (!awakRunning) {
+    return;
+  }
+
   const sumProfitNow = { ...sumProfit };
+
   let newList = patternList.map((pattern) => {
     if (!isRunning && pattern.isActive) {
       isRunning = true;
@@ -339,6 +357,14 @@ export const checkResult = () => (dispatch, getState) => {
         pattern.loseCount === 0)
   );
 
+  // handle delete unavailable room
+  const runningRoom = newList
+    .filter((pattern) => PATTERN_TYPE.COMMON_PAROLI === pattern.type)
+    .map(({ roomId }) => roomId);
+  const newRoomList = roomList.filter(
+    (room) => runningRoom.includes(room.roomId) || !room.isRunning
+  );
+
   batch(() => {
     dispatch(setPatternList(newList));
     dispatch(setSumProfit(sumProfitNow));
@@ -353,6 +379,7 @@ export const checkResult = () => (dispatch, getState) => {
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       dispatch(resetAllPatterns());
     } else {
+      dispatch(setRoomList(newRoomList));
       // eslint-disable-next-line @typescript-eslint/no-use-before-define
       dispatch(updateAutoParoliPatternList());
       dispatch(startBet());
@@ -449,6 +476,7 @@ export const addPatternList =
         uid: `${pattern.type}-${maxUidNumber}`,
       });
     });
+
     batch(() => {
       dispatch(setMaxId(maxIdNumber));
       dispatch(setPatternList(newList));
@@ -470,7 +498,14 @@ export const deleteCommonParoliPattern = (roomId) => (dispatch, getState) => {
   const {
     awakening: { patternList },
   } = getState((state) => state);
-  const newList = patternList.filter((pattern) => pattern.roomId !== roomId);
+  let newList;
+  if (roomId === 'ALL') {
+    newList = patternList.filter(
+      (pattern) => PATTERN_TYPE.COMMON_PAROLI !== pattern.type
+    );
+  } else {
+    newList = patternList.filter((pattern) => pattern.roomId !== roomId);
+  }
   dispatch(setPatternList(newList));
   saveLocalPatterns(newList);
 };
@@ -610,6 +645,17 @@ export const runCommonParoliPatterns = (roomId) => (dispatch, getState) => {
   });
   if (startAble) {
     dispatch(setPatternList(newPatternList));
+  }
+};
+
+export const addCommonParoliRoom = (room) => (dispatch, getState) => {
+  const {
+    awakening: { roomList },
+  } = getState((state) => state);
+  const roomIdList = roomList.map((_room) => _room.roomId);
+  if (!roomIdList.includes(room.roomId)) {
+    const newRoomList = [...roomList, room];
+    dispatch(setRoomList(newRoomList));
   }
 };
 

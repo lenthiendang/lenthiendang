@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { useInterval } from 'react-use';
 
 import { toggleBetSession } from '../redux/slices/sessionSlice';
