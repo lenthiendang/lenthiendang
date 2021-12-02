@@ -17,8 +17,8 @@ import Form, { FormControl, FormLabel } from '../../components/Form';
 import API from '../../class/API';
 import Server from '../../class/Server';
 import { setPrivilege } from '../../redux/slices/accountSlice';
-import exchange from '../../constant/exchanges';
-import { getSubscribeFee } from '../../utils';
+import exchange from '../../../constant/exchanges';
+import { getSubscribeFee } from '../../../utils';
 
 const SubscriptionForm = () => {
   const {

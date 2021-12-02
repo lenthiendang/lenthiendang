@@ -23,7 +23,7 @@ export const FormErrorMessage = (props) => (
 
 // eslint-disable-next-line react/display-name
 export const Input = React.forwardRef((props, ref) => (
-  <CInput color="primary.500" borderColor="primary.500" {...props} {...ref} />
+  <CInput color="primary.500" borderColor="primary.500" {...props} ref={ref} />
 ));
 
 export const SubmitButton = (props) => (

@@ -166,7 +166,6 @@ export const getTokenWithBrowser = (account) => async (dispatch) => {
     dispatch(toggleForm(false));
     const browser = new Browser();
     const res = await browser.loginWithEmailAndPassword(account);
-    console.log(res.data);
 
     if (res.data.local) {
       dispatch(

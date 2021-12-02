@@ -4,34 +4,51 @@ import { Flex, Spinner } from '@chakra-ui/react';
 
 import Background from '../components/Background';
 import Dashboard from './Dashboard';
-// import Agreement from './Agreement';
 import Login from './Login';
 import useCheckLogin from '../hooks/useCheckLogin';
 import { SocketContext, useSocket } from '../socket';
+import { useToggle } from 'react-use';
+import { useSelector } from 'react-redux';
+import Agreement from './Agreement';
 
 const Main = () => {
-  useCheckLogin();
   const socket = useSocket();
+
+  const { accessToken } = useSelector((state) => state.auth);
+  const [showAgreement, toggleAgreement] = useToggle(true);
+
+  if (showAgreement) {
+    return <Agreement toggleAgreement={toggleAgreement} />;
+  }
+
+  if (!accessToken) {
+    return <Login />;
+  }
+
+  if (!socket) {
+    return <Spinner size="xl" color="white" />;
+  }
 
   return (
     <SocketContext.Provider value={socket}>
-      <Background />
-      <Flex>
-        <Switch>
-          {/* <Route path="/index.html" exact>
-            <Agreement />
-            </Route>
-          */}
-          <Route path="/login" exact>
-            <Login />
-          </Route>
-          <Route path="/dashboard" exact>
-            {socket ? <Dashboard /> : <Spinner size="xl" color="white" />}
-          </Route>
-        </Switch>
-      </Flex>
+      <Dashboard />
     </SocketContext.Provider>
   );
+  // return (
+  //   <SocketContext.Provider value={socket}>
+  //     <Background />
+  //     <Flex>
+  //       <Switch>
+  //         <Route path="/login" exact>
+  //           <Login />
+  //         </Route>
+  //         <Route path="/dashboard" exact>
+  //           {socket ? <Dashboard /> : <Spinner size="xl" color="white" />}
+  //         </Route>
+  //       </Switch>
+  //     </Flex>
+  //   </SocketContext.Provider>
+  // );
 };
 
 export default Main;

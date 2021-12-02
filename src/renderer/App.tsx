@@ -8,6 +8,7 @@ import { BrowserRouter } from 'react-router-dom';
 import store from './redux';
 import Main from './pages/Main';
 import { colors } from '../constant/exchanges';
+import Background from './components/Background';
 
 const theme = extendTheme({
   colors: {
@@ -25,6 +26,7 @@ export default function App() {
     <BrowserRouter>
       <ReduxProvider store={store}>
         <ChakraProvider theme={theme}>
+          <Background />
           <Main />
         </ChakraProvider>
       </ReduxProvider>

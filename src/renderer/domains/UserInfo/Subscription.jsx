@@ -20,8 +20,8 @@ import 'dayjs/locale/vi';
 import SubscriptionForm from './SubscriptionForm';
 import { PropAttr, PropName, PropIcon, PropVal } from './Prop';
 import User from '../../class/User';
-import exchange from '../../constant/exchanges';
-import { getSubscribeFee } from '../../utils';
+import exchange from '../../../constant/exchanges';
+import { getSubscribeFee } from '../../../utils';
 
 dayjs.extend(relativeTime);
 dayjs.locale('vi');
@@ -47,41 +47,7 @@ const SubscriptionBox = ({ isOpen, onClose, enabled2fa }) => {
 
   const getForm = () => {
     const minFee = getSubscribeFee(fn, exchange.subscribeFee);
-    // if (!enabled2fa) {
-    //   return (
-    //     <>
-    //       <Text fontSize="xs" color="red.500">
-    //         Bạn chưa kích hoạt 2FA! Tài khoản kích hoạt 2FA mới có thể thực hiện thanh toán!
-    //       </Text>
-    //       <Text fontSize="xs" color="red.500">
-    //         Vui lòng kích hoạt bảo mật 2 lớp bằng cách thiết lập trực tiếp trên trang web!
-    //       </Text>
-    //     </>
-    //   );
-    // }
-
-    // if (walletBalance <= minFee) {
-    //   if (availableBalance <= minFee) {
-    //     return (
-    //       <Text fontSize="xs" color="red.500">
-    //         Bạn không đủ tiền trong ví chính! Vui lòng nạp thêm!
-    //       </Text>
-    //     );
-    //   }
-    //   return (
-    //     <Text fontSize="xs" color="red.500">
-    //       Bạn không đủ tiền trong ví chính! Vui lòng chuyển tiền từ tài khoản thực sang tài khoản chính!
-    //     </Text>
-    //   );
-    // }
-    // if (walletBalance > 0) {
     return <SubscriptionForm onClose={onClose} />;
-    // }
-    // return (
-    //   <Text fontSize="xs" color="red.500">
-    //     Lỗi server! Vui lòng đăng nhập lại!
-    //   </Text>
-    // );
   };
 
   return (
@@ -103,17 +69,27 @@ const Subscription = ({ expiredOn, enabled2fa }) => {
 
   return (
     <>
-      <SubscriptionBox isOpen={isOpen} onClose={onClose} enabled2fa={enabled2fa} />
+      <SubscriptionBox
+        isOpen={isOpen}
+        onClose={onClose}
+        enabled2fa={enabled2fa}
+      />
       <PropAttr>
         <PropName>
           <PropIcon icon={FaRegClock} />
           Hết hạn:
         </PropName>
         <PropVal
-          color={expiredOn && dayjs(expiredOn).diff(new Date()) > 0 ? 'green.400' : 'red.400'}
+          color={
+            expiredOn && dayjs(expiredOn).diff(new Date()) > 0
+              ? 'green.400'
+              : 'red.400'
+          }
           align="center"
         >
-          {expiredOn ? dayjs(expiredOn).format('HH:mm DD/MM/YY') : 'Chưa kích hoạt'}
+          {expiredOn
+            ? dayjs(expiredOn).format('HH:mm DD/MM/YY')
+            : 'Chưa kích hoạt'}
           <Button onClick={onOpen} colorScheme="primary" size="xs" ml="1">
             Gia hạn
           </Button>

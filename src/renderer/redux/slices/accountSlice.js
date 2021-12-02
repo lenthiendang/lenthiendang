@@ -37,6 +37,9 @@ const accountSlice = createSlice({
     setAccountType: (state, action) => {
       state.accountType = action.payload;
     },
+    setExpiredOn: (state, action) => {
+      state.expiredOn = action.payload;
+    },
     setPrivilege: (state, action) => {
       state.fn = action.payload.fn;
       state.role = action.payload.role;
@@ -71,6 +74,7 @@ const accountSlice = createSlice({
 
 export const {
   setInfo,
+  setExpiredOn,
   setPrivilege,
   setOriginalBalance,
   setBalance,

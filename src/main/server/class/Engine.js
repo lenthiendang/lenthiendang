@@ -1,10 +1,11 @@
 /* eslint-disable no-console */
-import { chromium, firefox } from 'playwright';
-import process from 'process';
-import os from 'os';
+const { chromium, firefox } = require('playwright');
+const process = require('process');
+const os = require('os');
 
-import { sleep } from '../../utils';
-import exchange from '../../constant/exchanges';
+const sleep = (ms) => {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+};
 
 const isVisual = true;
 
@@ -59,7 +60,7 @@ class Engine {
   }
 
   async fillLoginInput(user) {
-    await this.page.fill(exchange.emailInput, user.email);
+    await this.page.fill('input[name="email"]', user.email);
   }
 
   async waitUntilLoginSuccess() {
@@ -142,4 +143,4 @@ class Engine {
   }
 }
 
-export default Engine;
+module.exports = Engine;

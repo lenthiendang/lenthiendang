@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { Button, Checkbox } from '@chakra-ui/react';
 
+// import Form, { FormControl, FormLabel } from '../../../components/Form';
 import Form, { FormControl, FormLabel, Input } from '../../../components/Form';
 import { getTokenWithBrowser } from '../../../redux/slices/authSlice';
 
@@ -13,8 +14,6 @@ const LoginForm = () => {
   const onSubmit = (data) => {
     dispatch(getTokenWithBrowser(data));
   };
-
-  // if (isUpdatedVersion) {
   return (
     <Form onSubmit={handleSubmit(onSubmit)} flexDir="column" justify="center">
       <FormControl id="email" my="4">

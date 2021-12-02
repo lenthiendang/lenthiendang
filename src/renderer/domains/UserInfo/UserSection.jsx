@@ -8,7 +8,7 @@ import { GiNinjaHead, GiBatMask } from 'react-icons/gi';
 import { FaPeopleCarry } from 'react-icons/fa';
 import Box from '../../components/Box';
 import { PropAttr, PropName, PropIcon, PropVal } from './Prop';
-// import Subscription from './Subscription';
+import Subscription from './Subscription';
 import roles from '../../../constant/roles';
 import defaultAvatar from '../../../../assets/images/defaultAvatar.jpeg';
 
@@ -31,8 +31,6 @@ const AvatarBox = ({ url }) => (
     borderRadius="2xl"
   >
     <Avatar src={url || defaultAvatar} w="8.8rem" h="8.8rem" />
-    {/* <Image position="absolute" top="0.6rem" left="0.6rem" src={url || defaultAvatar} w="7.6rem" h="7.6rem" />
-    <Image position="absolute" src={teamlogo} w="8.8rem" h="8.8rem" /> */}
   </Flex>
 );
 
@@ -72,10 +70,10 @@ const UserSection = ({ account }) => {
           role={account.role}
           fn={account.fn}
         />
-        {/* <Subscription
+        <Subscription
           expiredOn={account.expiredOn}
           enabled2fa={account.enabled2fa}
-        /> */}
+        />
       </Flex>
     </Box>
   );

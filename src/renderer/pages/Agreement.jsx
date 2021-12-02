@@ -43,14 +43,14 @@ const AgreementList = () => {
   );
 };
 
-const Agreement = () => {
+const Agreement = ({ toggleAgreement }) => {
   const [showWarning, toggleWarning] = useState(false);
   const history = useHistory();
 
   // useAfterStarting();
 
   const handleRightClick = () => {
-    history.push('/login');
+    toggleAgreement();
   };
 
   const handleClick = () => {
