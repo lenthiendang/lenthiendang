@@ -652,9 +652,20 @@ export const addCommonParoliRoom = (room) => (dispatch, getState) => {
   const {
     awakening: { roomList },
   } = getState((state) => state);
-  const roomIdList = roomList.map((_room) => _room.roomId);
+  const roomStatus = {};
+  const roomIdList = roomList.map((_room) => {
+    if (!(_room.roomId in roomStatus)) {
+      roomStatus[_room.roomId] = _room.isRunning;
+    }
+    return _room.roomId;
+  });
   if (!roomIdList.includes(room.roomId)) {
     const newRoomList = [...roomList, room];
+    dispatch(setRoomList(newRoomList));
+  } else {
+    const newRoomList = roomList.map((_room) =>
+      _room.roomId === room.roomId ? room : _room
+    );
     dispatch(setRoomList(newRoomList));
   }
 };

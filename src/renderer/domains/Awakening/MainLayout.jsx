@@ -40,7 +40,7 @@ function MainLayout() {
     const timeoutId = setTimeout(() => {
       dispatch(checkResult());
       clearTimeout(timeoutId);
-    }, 2000);
+    }, 1500);
   }, [dispatch, candles]);
 
   return (

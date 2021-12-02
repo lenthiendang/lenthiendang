@@ -121,7 +121,7 @@ function RandomAwakening() {
           </Text>
         )}
         <Text color="yellow" pl="10px" fontSize="14px">
-          Tổng đặt: {Number(totalBetAmount).toFixed(2)}
+          Tổng cược: {Number(totalBetAmount).toFixed(2)}
         </Text>
         <ParoliRoomList />
         <Button

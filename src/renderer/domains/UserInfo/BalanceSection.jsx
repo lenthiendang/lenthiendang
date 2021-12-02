@@ -18,13 +18,13 @@ const balanceInfos = [
     label: 'Số dư hiện tại',
     attr: 'balance',
   },
-  {
-    icon: GiReceiveMoney,
-    label: 'Tổng lãi',
-    attr: 'profit',
-    isDecorated: true,
-  },
-  { icon: GiProfit, label: 'Tổng cược', attr: 'totalBet' },
+  // {
+  //   icon: GiReceiveMoney,
+  //   label: 'Tổng lãi',
+  //   attr: 'profit',
+  //   isDecorated: true,
+  // },
+  // { icon: GiProfit, label: 'Tổng cược', attr: 'totalBet' },
 ];
 
 const BalanceSection = ({ account }) => {
