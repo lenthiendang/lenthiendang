@@ -57,6 +57,7 @@ const initialState = {
   funds: '', // personal mode
   commonParoliFunds: 1, // common mode
   commonParoliRunning: false,
+  toggleCommonParoli: false,
   roomList: [],
 };
 
@@ -100,8 +101,24 @@ const awakeningSlice = createSlice({
     setCommonParoliRunning: (state, action) => {
       state.commonParoliRunning = action.payload;
     },
+    setToggleCommonParoli: (state, action) => {
+      state.toggleCommonParoli = action.payload;
+    },
     setRoomList: (state, action) => {
       state.roomList = action.payload;
+    },
+    resetAwaken: (state, action) => {
+      const { patternList } = state;
+      const newPatternList = patternList
+      .filter((pattern) => PATTERN_TYPE.COMMON_PAROLI !== pattern.type)
+      .map((pattern) => resetPattern(pattern));
+
+      state.roomList = [];
+      state.patternList = newPatternList;
+      state.sumProfit = initSumProfit;
+      state.betAmount = initBetAmount;
+      state.commonParoliRunning = false;
+      state.toggleCommonParoli = false;
     },
   },
 });
@@ -117,6 +134,8 @@ export const {
   setStopLossPoint,
   setTakeProfitPoint,
   setCommonParoliRunning,
+  setToggleCommonParoli,
+  resetAwaken,
   setFunds,
   setCommonParoliFunds,
   setPlayMode,
@@ -130,14 +149,9 @@ export const resetAllPatterns = () => (dispatch, getState) => {
   const newPatternList = patternList
     .filter((pattern) => PATTERN_TYPE.COMMON_PAROLI !== pattern.type)
     .map((pattern) => resetPattern(pattern));
-  dispatch(setCommonParoliRunning(false));
-  dispatch(setRoomList([]));
-  dispatch(setPatternList(newPatternList));
-  dispatch(setSumProfit(initSumProfit));
-  dispatch(setBetAmount(initBetAmount));
-
   // eslint-disable-next-line @typescript-eslint/no-use-before-define
   saveLocalPatterns(newPatternList);
+  dispatch(resetAwaken());
 };
 
 const getBetData = (patternList, betAccountType) => {

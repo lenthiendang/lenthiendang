@@ -2,6 +2,7 @@ import { Button, Flex, Text } from '@chakra-ui/react';
 import React, { useCallback, useContext } from 'react';
 import { batch, useDispatch, useSelector } from 'react-redux';
 import useGetTimestamp from '../../../hooks/useGetTimestamp';
+import { resetAccount } from '../../../redux/slices/accountSlice';
 import {
   resetAllPatterns,
   runRandomPatterns,
@@ -66,6 +67,7 @@ function RandomAwakening() {
       dispatch(resetAllPatterns());
     } else {
       batch(() => {
+        dispatch(resetAccount());
         dispatch(setProfitResult(0));
         dispatch(setTotalBetAmount(0));
         if (playMode === PLAY_MODE.COMMON) {

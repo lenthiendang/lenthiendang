@@ -6,6 +6,7 @@ import {
   addPatternList,
   runCommonParoliPatterns,
   setCommonParoliRunning,
+  setToggleCommonParoli,
 } from '../../../redux/slices/awakeningSlice';
 
 import { SocketContext } from '../../../socket';
@@ -15,7 +16,12 @@ import { getCommonParoliPattern, PATTERN_TYPE } from '../awakeningUtil';
 const useSocket = () => {
   const dispatch = useDispatch();
   const socket = useContext(SocketContext);
-  const { commonParoliFunds, patternList, commonParoliRunning } = useSelector(
+  const {
+    commonParoliFunds,
+    patternList,
+    commonParoliRunning,
+    toggleCommonParoli,
+  } = useSelector(
     (state) => state.awakening
   );
   const hasCommonParoli = patternList.some(
@@ -25,7 +31,13 @@ const useSocket = () => {
   const runCommonParoli = useCallback(() => {
     const patternAmount = Math.floor(commonParoliFunds);
     socket.emit('AWAKEN_REGISTER', patternAmount);
-  }, [commonParoliFunds, socket]);
+  }, [socket, commonParoliFunds]);
+
+  useEffect(() => {
+    if (commonParoliRunning) {
+      dispatch(setToggleCommonParoli(true));
+    }
+  }, [dispatch, commonParoliRunning]);
 
   useEffect(() => {
     if (commonParoliRunning && !hasCommonParoli) {
@@ -33,6 +45,12 @@ const useSocket = () => {
       runCommonParoli();
     }
   }, [socket, hasCommonParoli, runCommonParoli, commonParoliRunning]);
+
+  useEffect(() => {
+    if (!toggleCommonParoli) {
+      socket.emit('AWAKEN_UNREGISTER');
+    }
+  },[dispatch, toggleCommonParoli])
 
   const getCommonParoliList = (registerData) => {
     const commonParoliList = [];
@@ -59,6 +77,8 @@ const useSocket = () => {
         const commonParoliList = getCommonParoliList(responseData);
         dispatch(addPatternList(commonParoliList, PATTERN_TYPE.COMMON_PAROLI));
         dispatch(setCommonParoliRunning(true));
+      } else {
+        dispatch(setCommonParoliRunning(false));
       }
     });
 
