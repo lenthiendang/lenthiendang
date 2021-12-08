@@ -41,7 +41,7 @@ export const FORM_FIELD = {
 const schemaPersonalValidation = {
   [FORM_FIELD.STOP_LOSS_POINT]: yup
     .string()
-    .test('min', 'Giá trị tối thiểu là 10', (val) => Number(val) >= 10)
+    .test('min', 'Giá trị tối thiểu là 3', (val) => Number(val) >= 3)
     .test(
       'right-format',
       'Giá trị không hợp lệ',
